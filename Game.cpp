@@ -16,7 +16,7 @@ void Game::createGameObjects()
 	printf("\nCreating Game Objects");
 	
 	// Create Game Objects - filename , x and y pos, initial angle
-	pc = new PlayerCharacter("assets/images/Pawn_Purple.png", 0, 0, 0);
+	pc = new PlayerCharacter("assets/images/playerSprite.png", 0, 0, 0);
 }//----
 
 void Game::handleEvents()

@@ -8,7 +8,7 @@ class GameObject
 {
 public:
 	GameObject();
-	GameObject(const char* spriteFileName, int xPos, int yPos);
+	GameObject(const char* spriteFileName, float xPos, float yPos);
 	void update();
 	void render();
 	void setSize(int width, int height);
@@ -18,8 +18,6 @@ public:
 	void addY(float yAmount) { y += yAmount; }
 	void Loadtexture(const char* spriteFileName);
 	void screenLimit();
-	void screenBounce();
-	void screenWrap();
 	void disableOffScreen();
 	float getX() { return x; }
 	float getY() { return y; }
@@ -47,7 +45,7 @@ protected: // derived classes can access
 class PlayerCharacter : GameObject
 {
 public:
-	PlayerCharacter(const char* spriteFileName, int xPos, int yPos, float rotation);
+	PlayerCharacter(const char* spriteFileName, float xPos, float yPos, float rotation);
 	void updatePC(int keyDown, int keyUp, float frameTime);
 	void renderPC();
 	
