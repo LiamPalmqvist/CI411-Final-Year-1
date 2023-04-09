@@ -1,25 +1,40 @@
 // CI411_Final_Year_1_Liam_Palmqvist.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
 
+#include "Game.h" 
 
-#include <iostream>
-#include <SDL.h>
+// Variables
+Game* game = nullptr;
 
-
+// ======================================================= 
 int main(int argc, char* argv[])
 {
-    std::cout << "Hello World!\n";
-    return 0;
-}
+	// Frame Limit Variables
+	const int frameDelay = 1000 / FPS;
+	Uint64 frameStart = 0, frameTime = 0;
 
+	// Create the Game Object
+	game = new Game;
 
-// Run program: Ctrl + F5 or Debug > Start Without Debugging menu
-// Debug program: F5 or Debug > Start Debugging menu
+	// Start SDL & Create the Game Window
+	game->startSDL("CI411 SDL Example");
+	game->createGameObjects();
 
-// Tips for Getting Started: 
-//   1. Use the Solution Explorer window to add/manage files
-//   2. Use the Team Explorer window to connect to source control
-//   3. Use the Output window to see build output and other messages
-//   4. Use the Error List window to view errors
-//   5. Go to Project > Add New Item to create new code files, or Project > Add Existing Item to add existing code files to the project
-//   6. In the future, to open this project again, go to File > Open > Project and select the .sln file
+	// Main Game Loop
+	while (game->isRunning())
+	{
+		frameStart = SDL_GetTicks64();
+
+		game->handleEvents();
+		game->update(frameTime);
+		game->render();
+
+		// Limit Frame Rate
+		frameTime = SDL_GetTicks64() - frameStart;
+		if (frameDelay > frameTime) SDL_Delay(frameDelay - frameTime);
+	}
+
+	game->closeSDL();
+
+	return 0;
+}//---
