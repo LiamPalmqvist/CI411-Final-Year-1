@@ -2,7 +2,6 @@
 // =======================================================
 // Libraries / Headers to include 
 #include "Game.h"
-#include <vector>
 
 class GameObject
 {
@@ -18,6 +17,8 @@ public:
 	void addY(float yAmount) { y += yAmount; }
 	void Loadtexture(const char* spriteFileName);
 	void screenLimit();
+	void screenWrap();
+	void screenBounce();
 	void disableOffScreen();
 	float getX() { return x; }
 	float getY() { return y; }
@@ -56,6 +57,7 @@ public:
 	float getAngle() { return angle; }
 	float getHP() { return health; }
 	void changeHP(float hpChange) { health += hpChange; }
+	bool isFiring() { return firing; }
 
 	float getVelX() { return xVel; }
 	float getVelY() { return yVel; }
@@ -68,12 +70,39 @@ public:
 	void stop();
 
 private:
-	int sprinting = 0;
 	float wDown = false;
 	float sDown = false;
 	float aDown = false;
 	float dDown = false;
+	float firing = false;
 	float drag = 0.9F;
 	float acceleration = 50;
 
+};
+
+class Projectile :GameObject
+{
+public:
+	Projectile(const char* spriteFileName, int xPos, int yPos, float rotation, float spriteSize);
+
+	bool getAliveState() { return isActive; }
+	void setAlive(bool state) { isActive = state; }
+	void fire(float xSent, float ySent, float angleSent);
+	void fireAtTarget(float startX, float startY, float targetX, float targetY);
+	void update(float frameTime);
+	void renderProjectile();
+	void setBulletSpeed(float newSpeed) { speed = newSpeed; }
+	float getX() { return x; }
+	float getY() { return y; }
+
+	float getDamage() { return damage; }
+	void setDamage(float newDamage) { damage = newDamage; }
+	Uint32 getSize() { return bulletSize; }
+
+
+private:
+	Uint32 lastTimeActivated = 0;
+	Uint32 disableTime = 0;
+	Uint32  bulletSize = 0;
+	float damage = 30, range = 20;
 };

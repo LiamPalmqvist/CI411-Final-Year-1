@@ -11,6 +11,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		assets\audio\beep.wav = assets\audio\beep.wav
 		assets\images\BG_Grid_800.png = assets\images\BG_Grid_800.png
 		assets\fonts\bubble_pixel-7_dark.ttf = assets\fonts\bubble_pixel-7_dark.ttf
+		assets\images\bullet.png = assets\images\bullet.png
 		assets\images\Circle_8.png = assets\images\Circle_8.png
 		assets\images\Circle_Blue.png = assets\images\Circle_Blue.png
 		assets\images\Circle_Green.png = assets\images\Circle_Green.png

@@ -108,6 +108,23 @@ void GameObject::screenLimit()
 	}
 }//---
 
+void GameObject::screenWrap()
+{
+	// Screen Wrap to opposite side if sprite leaves screen
+	if (x > SCREEN_WIDTH - SPRITE_SIZE)  x = 0;
+	if (x < 0) x = SCREEN_WIDTH - SPRITE_SIZE;
+	if (y > SCREEN_HEIGHT - SPRITE_SIZE) y = 0;
+	if (y < 0) y = SCREEN_HEIGHT - SPRITE_SIZE;
+}//---
+
+void GameObject::screenBounce()
+{
+	// bounce of edges by reversing velocity
+	if (x > SCREEN_WIDTH - SPRITE_SIZE)  xVel = -xVel;
+	if (x < 0) xVel = -xVel;
+	if (y > SCREEN_HEIGHT - SPRITE_SIZE) yVel = -yVel;
+	if (y < 0) yVel = -yVel;
+}//---
 
 // ======================================================= 
 // PC Object 
@@ -131,9 +148,6 @@ void PlayerCharacter::renderPC()
 	SDL_RenderCopyEx(Game::renderer, spriteTexture, &srcRect, &destRect, angle, NULL, SDL_FLIP_NONE);
 }//---
 
-
-// ======================================================= 
-
 void PlayerCharacter::updatePC(int keyDown, int keyUp, float frameTime)
 {
 	// Set old Position for Collision detection
@@ -151,48 +165,42 @@ void PlayerCharacter::updatePC(int keyDown, int keyUp, float frameTime)
 	destRect.y = (int)y;
 }//-----
 
-// ======================================================= 
-
 void PlayerCharacter::smoothMove(int keyDown, int keyUp, float frameTime)
 {
 	switch (keyDown)
 	{
 	case 26: // W
 		wDown = true;
-		keyDown = NULL;
 		break;
 	case 22: // A
 		aDown = true;
-		keyDown = NULL;
 		break;
 	case 4: // S
 		sDown = true;
-		keyDown = NULL;
 		break;
 	case 7: // D
 		dDown = true;
-		keyDown = NULL;
 		break;
+	case 44: // Space
+		firing = true;
 	}
 
 	switch (keyUp)
 	{
 	case 26: // W
 		wDown = false;
-		keyDown = NULL;
 		break;
 	case 22: // A
 		aDown = false;
-		keyDown = NULL;
 		break;
 	case 4: // S
 		sDown = false;
-		keyDown = NULL;
 		break;
 	case 7: // D
 		dDown = false;
-		keyDown = NULL;
 		break;
+	case 44:
+		firing = false;
 	}
 
 	// WSAD /// Add Acceleration
@@ -211,13 +219,13 @@ void PlayerCharacter::smoothMove(int keyDown, int keyUp, float frameTime)
 	if (abs(xVel) > 0.3f) xVel *= drag; else xVel = 0;
 	if (abs(yVel) > 0.3f) yVel *= drag; else yVel = 0;
 
-
 	// Update positions
 	x += xVel;
 	y += yVel;
 
-	//screenLimit();
+	//screenWrap();
 	screenLimit();
+	//screenBounce();
 }//---
 
 
@@ -228,4 +236,64 @@ void PlayerCharacter::stop()
 	y = oldY;
 }//--
 
-// ======================================================= 
+// ========================================================
+// ====================== PROJECTILE ======================
+// ========================================================
+
+Projectile::Projectile(const char* spriteFileName, int xPos, int yPos, float rotation, float spriteSize)
+{
+	Loadtexture(spriteFileName);	// Load Image from File
+	bulletSize = spriteSize;
+	x = xPos; 	y = yPos;
+	angle = rotation;
+	srcRect.h = srcRect.w = bulletSize;
+	srcRect.x = srcRect.y = 0;
+	destRect.h = destRect.w = bulletSize;
+}//---
+
+void Projectile::fire(float xSent, float ySent, float angleSent)
+{
+	if (!isActive)
+	{
+		isActive = true;
+		x = xSent; //+ SPRITE_SIZE / 2; // center the bullet
+		y = ySent; //+ SPRITE_SIZE / 2;
+		angle = angleSent;
+		xVel = sin(angle * M_PI / 180) * speed;
+		yVel = -cos(angle * M_PI / 180) * speed;
+	}
+}//---
+
+
+void Projectile::fireAtTarget(float startX, float startY, float targetX, float targetY)
+{
+	if (!isActive)
+	{
+		isActive = true;
+		x = startX + SPRITE_SIZE / 2;
+		y = startY + SPRITE_SIZE / 2;
+		angle = atan2(targetX - x, targetY - y);
+		xVel = sin(angle) * speed;
+		yVel = cos(angle) * speed;
+	}
+}//---
+
+
+void Projectile::renderProjectile()
+{
+	SDL_RenderCopyEx(Game::renderer, spriteTexture, &srcRect, &destRect, angle, NULL, SDL_FLIP_NONE);
+}//---
+
+
+void Projectile::update(float frameTime)
+{
+	// Update Velocity
+	x += xVel * frameTime;
+	y += yVel * frameTime;
+
+	disableOffScreen();
+
+	//update Drawing Position Rect
+	destRect.x = (int)x;
+	destRect.y = (int)y;
+}//---
