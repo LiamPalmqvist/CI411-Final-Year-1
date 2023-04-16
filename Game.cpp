@@ -66,9 +66,6 @@ void Game::checkAttacks()
 		}
 	}
 	coolDown--;
-	// TODO: Make tiers of bullets
-	// TODO: Make collisions
-	// TODO: Make enemies
 }
 
 void Game::handleEvents()
@@ -158,3 +155,7 @@ Game::Game() // Constructor
 {
 	printf(" \n\n ----- Game Started ------ \n");
 }
+
+// TODO: Make tiers of bullets
+// TODO: Make collisions
+// TODO: Make enemies
