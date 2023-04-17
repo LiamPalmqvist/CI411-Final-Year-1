@@ -1,5 +1,5 @@
 #pragma once
-// =======================================================
+// =========================================================================
 // Libraries / Headers to include 
 #include "Game.h"
 
@@ -40,8 +40,7 @@ protected: // derived classes can access
 	SDL_Texture* spriteTexture = nullptr;
 };
 
-
-// =======================================================
+// =========================================================================
 
 class PlayerCharacter : GameObject
 {
@@ -80,7 +79,9 @@ private:
 
 };
 
-class Projectile :GameObject
+// =========================================================================
+
+class Projectile : GameObject
 {
 public:
 	Projectile(const char* spriteFileName, int xPos, int yPos, float rotation, float spriteSize);
@@ -105,4 +106,34 @@ private:
 	Uint32 disableTime = 0;
 	Uint32  bulletSize = 0;
 	float damage = 30, range = 20;
+};
+
+// =========================================================================
+
+class NPC :GameObject {
+public:
+	NPC(const char* spriteFileName, int xPos, int yPos, float rotation);
+	void renderNPC();
+	void updateNPC();
+	void setAlive(bool state) { isActive = state; }
+	bool getAliveState() { return isActive; }
+	void roam(float frameTime);
+	void chasePC(float pcX, float pcY);
+	void setSpeed(float newSpeed) { speed = newSpeed; }
+	void screenCrawl(float frameTime);
+	float getX() { return x; }
+	float getY() { return y; }
+	void setX(float newX) { x = newX; }
+	void setY(float newY) { y = newY; }
+
+	float getHP() { return health; }
+	void changeHP(float hpChange) { health += hpChange; }
+	int getNextShotTime() { return nextShotTime; }
+	void setNextShotTime(int newTime) { nextShotTime = newTime; }
+	void changeDirection();
+
+private:
+	float drag = 0.99F;
+	float acceleration = 50;
+	int nextShotTime = 0;
 };

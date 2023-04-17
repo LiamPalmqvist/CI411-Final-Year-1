@@ -1,5 +1,6 @@
 #include "Game.h"
 #include "GameObjects.h"
+#include "Levels.h"
 // ======================================================= 
 // SDL Variables
 SDL_Renderer* Game::renderer = nullptr;;
@@ -8,16 +9,31 @@ GameInput playerInput;
 
 // Game Objects
 PlayerCharacter* pc = nullptr;
-Projectile* bulletsPC[20];
+GameObject* walls[200];
+Projectile* bulletsPC[20] = {};
+NPC* npcs[20];
+Projectile* bulletsNPC[20] = {};
+Levels* levelMaps = nullptr;
+
 
 // ======================================================= 
 
 void Game::createGameObjects()
 {
+	levelMaps = new Levels;
+
 	printf("\nCreating Game Objects");
 	
 	// Create Game Objects - filename , x and y pos, initial angle
 	pc = new PlayerCharacter("assets/images/playerSprite.png", (SCREEN_WIDTH/2-SPRITE_SIZE/2), (SCREEN_HEIGHT/2-SPRITE_SIZE/2), 0);
+
+	// Create an Array of NPCs
+	for (int i = 0; i < sizeof(npcs) / sizeof(npcs[0]); i++)
+	{
+		npcs[i] = new NPC("assets/images/Circle_Red.png", 0, 0, 0);
+		npcs[i]->setSpeed(64);
+		npcs[i]->setNextShotTime(rand() % 10000); // Set Random shot time upto 10 Secs
+	}
 
 	//create PC bullets but do not enable
 	for (int i = 0; i < sizeof(bulletsPC) / sizeof(bulletsPC[0]); i++)
@@ -26,13 +42,98 @@ void Game::createGameObjects()
 		bulletsPC[i]->setBulletSpeed(500);
 		bulletsPC[i]->setDamage(35);
 	}
+
+	//create NPC bullets but do not enable
+	for (int i = 0; i < sizeof(bulletsNPC) / sizeof(bulletsNPC[0]); i++)
+	{
+		bulletsNPC[i] = new Projectile("assets/images/Circle_Red_8.png", -100, -100, 90, 8);
+		bulletsNPC[i]->setBulletSpeed(250);
+		bulletsNPC[i]->setDamage(20);
+	}
+
+	// Create wall objects but do not enable
+	for (int i = 0; i < sizeof(walls) / sizeof(walls[0]); i++)
+	{
+		walls[i] = new GameObject("assets/images/wall.png", 0, 0);
+	}
+	loadMap(4);
 }//----
+
+void Game::loadMap(int levelNumber)
+{
+	std::cout << "\nLoading Level " << levelNumber;
+	/*for (int row = 0; row < 19; row++)
+	{
+		for (int col = 0; col < 25; col++)
+		{
+			std::cout << levelMaps.getTileContent(levelNumber, row, col);
+		}
+	}
+	*/
+	for (int row = 0; row < 18; row++)
+	{
+		for (int col = 0; col < 25; col++)
+		{
+			if (levelMaps->getTileContent(levelNumber, col, row) == 1) //  Terrain 
+			{
+				for (GameObject* block : walls)
+				{
+					if (block->getAliveState() == false)
+					{
+						block->setAlive(true);
+						block->setX(col * SPRITE_SIZE);
+						block->setY(row * SPRITE_SIZE);
+						break;
+					}
+				}
+			}
+
+			if (levelMaps->getTileContent(levelNumber, col, row) == 2) // PC
+			{
+				pc->setX(col * SPRITE_SIZE);
+				pc->setY(row * SPRITE_SIZE);
+			}
+
+			
+			if (levelMaps->getTileContent(levelNumber, col, row) == 3) //  NPC
+			{
+				for (NPC* npc : npcs)
+				{
+					if (npc->getAliveState() == false)
+					{
+						npc->setAlive(true);
+						npc->setX(col * SPRITE_SIZE);
+						npc->setY(row * SPRITE_SIZE);
+						break;
+					}
+				}
+			}
+			/*
+			if (levelMaps.getTileContent(levelNumber, col, row) == 4) //  Items
+			{
+				for (GameObject* item : items)
+				{
+					if (item->getAliveState() == false)
+					{
+						item->setAlive(true);
+						item->setX(col * SPRITE_SIZE);
+						item->setY(row * SPRITE_SIZE);
+						break;
+					}
+				}
+			}
+			*/
+	
+		}
+	}
+	
+}//---
 
 void Game::checkAttacks()
 {
+	// This part is for the Player Character
 	if (pc->isFiring()) // Space 
 	{
-		std::cout << "Space is being pressed";
 		switch (bulletTier)
 		{
 
@@ -43,12 +144,11 @@ void Game::checkAttacks()
 				if (bullet->getAliveState() == false && coolDown <= 0)
 				{	// fire in the direction the pc is facing
 					
-					bullet->fire(pc->getX(), pc->getY(), 0);
+					bullet->fire((pc->getX() + SPRITE_SIZE / 2) - 4, pc->getY() + 1, 0);
 					coolDown = 6; // Set the cooldown
 					break; // stop checking the array
 				}
 			}
-			std::cout << "Firing" << coolDown;
 			break;
 
 		case 1:
@@ -66,6 +166,33 @@ void Game::checkAttacks()
 		}
 	}
 	coolDown--;
+
+	// NPC attacks
+	for (NPC* npc : npcs)
+	{
+		if (npc->getAliveState() == true)
+		{
+			if (npc->getNextShotTime() < SDL_GetTicks())
+			{
+				// find the first inactive bullet and enable it at the PC Position
+				for (Projectile* bullet : bulletsNPC)
+				{
+					if (bullet->getAliveState() == false)
+					{
+						// Fire at PC
+						bullet->fireAtTarget(npc->getX(), npc->getY(), pc->getX(), pc->getY());
+
+						// fire Down
+						//bullet->fireAtTarget(npc->getX(), npc->getY(), npc->getX(), SCREEN_HEIGHT);
+
+						// Set Random shot time - Current time + 3s + random upto 7s
+						npc->setNextShotTime(SDL_GetTicks() + 3000 + rand() % 7000);
+						break; // stop checking the bullet array
+					}
+				}
+			}
+		}
+	}
 }
 
 void Game::handleEvents()
@@ -89,7 +216,7 @@ void Game::handleEvents()
 		break;
 
 	case SDL_KEYUP:
-		std::cout << "\n" << playerInputEvent.key.keysym.scancode << " + " << playerInputEvent.key.keysym.mod << " up.";
+		// std::cout << "\n" << playerInputEvent.key.keysym.scancode << " + " << playerInputEvent.key.keysym.mod << " up.";
 		playerInput.keyUp = playerInputEvent.key.keysym.scancode;
 		break;
 
@@ -98,6 +225,121 @@ void Game::handleEvents()
 	}
 }//---
 
+void Game::checkCollision()
+{
+	// Create the Rects for checking what collides
+	SDL_Rect pcRect = { pc->getX(), pc->getY(), SPRITE_SIZE, SPRITE_SIZE };
+	SDL_Rect objectRect = { -100,-100, SPRITE_SIZE, SPRITE_SIZE };
+	SDL_Rect npcRect = { -100,-100, SPRITE_SIZE, SPRITE_SIZE };
+	SDL_Rect bulletRect = { 0,0,0,0 };
+
+	// Set the PC's next Position by adding velocity
+	SDL_Rect pcNextRect = { pc->getX() + pc->getVelX(), pc->getY() + pc->getVelY(), SPRITE_SIZE, SPRITE_SIZE };
+
+	for (GameObject* wall : walls)  //  Terrain -----------------
+	{
+		if (wall->getAliveState())
+		{
+			objectRect.x = wall->getX();
+			objectRect.y = wall->getY();
+
+			if (SDL_HasIntersection(&pcNextRect, &objectRect))  // PC -----
+			{
+				pc->stop(); // Stop the PC moving
+			}
+
+			
+			for (NPC* npc : npcs) // NPCs ---------
+			{
+				if (npc->getAliveState() == true)
+				{
+					npcRect.x = npc->getX(); // Update the rect
+					npcRect.y = npc->getY();
+
+					if (SDL_HasIntersection(&npcRect, &objectRect))
+					{
+						npc->changeDirection();
+					}
+				}
+			}
+			
+
+			for (Projectile* bullet : bulletsPC)  // PC  Bullets -----------------
+			{
+				if (bullet->getAliveState() == true)
+				{
+					bulletRect.x = bullet->getX(); // Update the rect
+					bulletRect.y = bullet->getY();
+					bulletRect.w = bulletRect.h = bullet->getSize();
+
+					if (SDL_HasIntersection(&objectRect, &bulletRect))
+					{
+						bullet->setAlive(false); // disable bullet
+					}
+				}
+			}
+		}
+	}
+
+	for (Projectile* bullet : bulletsNPC)  //  NPC Bullets -----------------
+	{
+		if (bullet->getAliveState() == true)
+		{
+			bulletRect.x = bullet->getX(); // Update the rect
+			bulletRect.y = bullet->getY();
+			bulletRect.w = bulletRect.h = bullet->getSize();
+
+			if (SDL_HasIntersection(&pcRect, &bulletRect))  //  PC ------
+			{
+				pc->changeHP(-bullet->getDamage()); // Apply damage
+				bullet->setAlive(false); // disable bullet
+			}
+
+			for (GameObject* block : walls)  //  Terrain ------
+			{
+				if (block->getAliveState())
+				{
+					objectRect.x = block->getX();
+					objectRect.y = block->getY();
+
+					if (SDL_HasIntersection(&objectRect, &bulletRect))
+					{
+						bullet->setAlive(false); // disable bullet
+					}
+				}
+			}
+		}
+	}
+
+	// check what alive NPCs hit -
+	for (NPC* npc : npcs)
+	{
+		if (npc->getAliveState() == true)
+		{
+			npcRect.x = npc->getX(); // Update the rect
+			npcRect.y = npc->getY();
+
+			for (Projectile* bullet : bulletsPC)  // PC  Bullets -----------------
+			{
+				if (bullet->getAliveState() == true)
+				{
+					bulletRect.x = bullet->getX(); // Update the rect
+					bulletRect.y = bullet->getY();
+					bulletRect.w = bulletRect.h = bullet->getSize();
+
+					if (SDL_HasIntersection(&npcRect, &bulletRect)) // NPC
+					{
+						//npc->setAlive(false); // Disable the NPC 						
+						npc->changeHP(-bullet->getDamage()); // Apply damage
+
+						bullet->setAlive(false); // disable bullet
+					}
+				}
+			}
+		}
+	}
+}
+
 void Game::update(float frameTime)
 {
 	// Ensure Frame rate is at the delay speed and convert to deltaTime
@@ -105,12 +347,39 @@ void Game::update(float frameTime)
 
 	pc->updatePC(playerInput.keyDown, playerInput.keyUp, frameTime);
 	
+	// Set NPC Behaviours
+	for (NPC* npc : npcs)
+	{
+		if (npc->getAliveState())
+		{
+			npc->roam(frameTime);
+			npc->updateNPC();
+			//npc->screenCrawl(frameTime);		
+		}
+	}
+
 	for (Projectile* bullet : bulletsPC)
 	{
 		if (bullet->getAliveState()) { bullet->update(frameTime); }
 	}
+
+	for (Projectile* bullet : bulletsNPC)
+	{
+		if (bullet->getAliveState()) { bullet->update(frameTime); }
+	}
+
+	for (NPC* npc : npcs)
+	{
+		if (npc->getAliveState()) { npc->updateNPC(); }
+	}
+
+	for (GameObject* wall : walls)
+	{
+		if (wall->getAliveState()) { wall->update(); }
+	}
 	
 	checkAttacks();
+	checkCollision();
 }
 
 void Game::render()
@@ -121,6 +390,21 @@ void Game::render()
 	for (Projectile* bullet : bulletsPC)
 	{
 		if (bullet->getAliveState()) { bullet->renderProjectile(); }
+	}
+
+	for (Projectile* bullet : bulletsNPC)
+	{
+		if (bullet->getAliveState()) { bullet->renderProjectile(); }
+	}
+
+	for (NPC* npc : npcs)
+	{
+		if (npc->getAliveState()) { npc->renderNPC(); }
+	}
+
+	for (GameObject* wall : walls)
+	{
+		if (wall->getAliveState()) { wall->render(); }
 	}
 
 	SDL_RenderPresent(renderer); 	// Update the screen
@@ -155,7 +439,3 @@ Game::Game() // Constructor
 {
 	printf(" \n\n ----- Game Started ------ \n");
 }
-
-// TODO: Make tiers of bullets
-// TODO: Make collisions
-// TODO: Make enemies

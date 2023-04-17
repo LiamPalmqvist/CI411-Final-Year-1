@@ -9,8 +9,8 @@
 
 
 // Constants
-#define SCREEN_WIDTH  1920
-#define SCREEN_HEIGHT 1080
+#define SCREEN_WIDTH  800
+#define SCREEN_HEIGHT 600
 #define ROWS = 18
 #define COLUMNS = 25
 #define SPRITE_SIZE 32
@@ -25,8 +25,10 @@ public:
 	bool isRunning() { return gameRunning; }
 	void startSDL(const char* title);
 	void createGameObjects();
+	void loadMap(int levelNumber);
 	void handleEvents();
 	void checkAttacks();
+	void checkCollision();
 	void update(float frametime);
 	void render();
 	void closeSDL();

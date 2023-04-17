@@ -183,6 +183,10 @@ void PlayerCharacter::smoothMove(int keyDown, int keyUp, float frameTime)
 		break;
 	case 44: // Space
 		firing = true;
+		break;
+	case 225: // lShift
+		acceleration = 100;
+		break;
 	}
 
 	switch (keyUp)
@@ -201,6 +205,10 @@ void PlayerCharacter::smoothMove(int keyDown, int keyUp, float frameTime)
 		break;
 	case 44:
 		firing = false;
+		break;
+	case 225: // lShift
+		acceleration = 50;
+		break;
 	}
 
 	// WSAD /// Add Acceleration
@@ -297,3 +305,123 @@ void Projectile::update(float frameTime)
 	destRect.x = (int)x;
 	destRect.y = (int)y;
 }//---
+
+// ========================================================
+// ========================= NPC ==========================
+// ========================================================
+
+NPC::NPC(const char* spriteFileName, int xPos, int yPos, float rotation)
+{
+	Loadtexture(spriteFileName);
+	x = xPos; 	y = yPos;
+	angle = rotation;
+	srcRect.h = srcRect.w = SPRITE_SIZE;
+	srcRect.x = srcRect.y = 0;
+	destRect.h = destRect.w = SPRITE_SIZE;
+	destRect.x = (int)x; destRect.y = (int)y;
+}//----
+
+void NPC::renderNPC()
+{
+	// add the Sprite to the Render Image
+	SDL_RenderCopyEx(Game::renderer, spriteTexture, &srcRect, &destRect, angle, NULL, SDL_FLIP_NONE);
+
+}//---
+
+void NPC::updateNPC()
+{
+	if (health < 0) isActive = false;
+
+	//update Drawing Position Rect
+	destRect.x = (int)x;
+	destRect.y = (int)y;
+}//-----
+
+// ======================================================= 
+
+void NPC::changeDirection()
+{
+	angle = rand() % 360 + 1;
+	x = oldX;
+	y = oldY;
+
+}//---
+
+
+void NPC::chasePC(float pcX, float pcY)
+{
+	if (x > pcX) x--;
+	if (x < pcX) x++;
+	if (y > pcY) y--;
+	if (y < pcY) y++;
+}//---
+
+
+void NPC::roam(float frameTime)
+{
+	oldX = x;
+	oldY = y;
+
+	// Move Forward
+	xVel = sin(angle * M_PI / 180) * speed * frameTime;
+	yVel = -cos(angle * M_PI / 180) * speed * frameTime;
+
+	// Randomise direction if NPC reach edges
+	if (x > (SCREEN_WIDTH - SPRITE_SIZE) || x < 0 || y > SCREEN_HEIGHT - SPRITE_SIZE || y < 0)
+	{
+		angle = rand() % 360 + 1;
+	}
+
+	screenLimit();
+
+	// Update positions
+	x += xVel;
+	y += yVel;
+}//---
+
+
+
+void NPC::screenCrawl(float frameTime)
+{
+	if (xVel == 0) // Set some motion is the object is still
+	{
+		xVel = speed;
+		yVel = -1;
+	}
+
+	if (x > SCREEN_WIDTH - SPRITE_SIZE) // hit RHS
+	{
+		x = SCREEN_WIDTH - SPRITE_SIZE;
+		if (yVel < 0)
+			y += SPRITE_SIZE;
+		else
+			y -= SPRITE_SIZE;
+		xVel = -xVel;
+	}
+	if (x < 0) // hit LHS
+	{
+		x = 0;
+		if (yVel < 0)
+			y += SPRITE_SIZE;
+		else
+			y -= SPRITE_SIZE;
+		xVel = -xVel;
+	}
+
+	if (y > SCREEN_HEIGHT - SPRITE_SIZE) // hit bottom of Screen
+	{
+		y = 512;
+		yVel = -yVel;
+	}
+
+	if (y < 0)// hit top of Screen
+	{
+		y = 0;
+		yVel = -yVel;
+	}
+
+	x += xVel * frameTime;
+}//---
+
+
+// ======================================================= 
