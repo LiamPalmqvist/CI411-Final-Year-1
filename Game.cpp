@@ -10,6 +10,7 @@ GameInput playerInput;
 // Game Objects
 PlayerCharacter* pc = nullptr;
 GameObject* walls[200];
+GameObject* movingWalls[450];
 Projectile* bulletsPC[20] = {};
 NPC* npcs[20];
 Projectile* bulletsNPC[20] = {};
@@ -56,7 +57,13 @@ void Game::createGameObjects()
 	{
 		walls[i] = new GameObject("assets/images/wall.png", 0, 0);
 	}
-	loadMap(4);
+
+	for (int i = 0; i < sizeof(movingWalls) / sizeof(movingWalls[0]); i++)
+	{
+		movingWalls[i] = new GameObject("assets/images/Square_Cross_Blue.png", 0, 0);
+		movingWalls[i]->setYVel(20);
+	}
+	loadMap(5);
 }//----
 
 void Game::loadMap(int levelNumber)
@@ -76,13 +83,13 @@ void Game::loadMap(int levelNumber)
 		{
 			if (levelMaps->getTileContent(levelNumber, col, row) == 1) //  Terrain 
 			{
-				for (GameObject* block : walls)
+				for (GameObject* wall : walls)
 				{
-					if (block->getAliveState() == false)
+					if (wall->getAliveState() == false)
 					{
-						block->setAlive(true);
-						block->setX(col * SPRITE_SIZE);
-						block->setY(row * SPRITE_SIZE);
+						wall->setAlive(true);
+						wall->setX(col * SPRITE_SIZE);
+						wall->setY(row * SPRITE_SIZE);
 						break;
 					}
 				}
@@ -123,6 +130,19 @@ void Game::loadMap(int levelNumber)
 				}
 			}
 			*/
+			if (levelMaps->getTileContent(levelNumber, col, row) == 5) //  Moving blocks
+			{
+				for (GameObject* block : movingWalls)
+				{
+					if (block->getAliveState() == false)
+					{
+						block->setAlive(true);
+						block->setX(col * SPRITE_SIZE);
+						block->setY(row * SPRITE_SIZE);
+						break;
+					}
+				}
+			}
 	
 		}
 	}
@@ -225,7 +245,7 @@ void Game::handleEvents()
 	}
 }//---
 
-void Game::checkCollision()
+void Game::checkCollision(float frameTime)
 {
 	// Create the Rects for checking what collides
 	SDL_Rect pcRect = { pc->getX(), pc->getY(), SPRITE_SIZE, SPRITE_SIZE };
@@ -288,7 +308,7 @@ void Game::checkCollision()
 			bulletRect.x = bullet->getX(); // Update the rect
 			bulletRect.y = bullet->getY();
 			bulletRect.w = bulletRect.h = bullet->getSize();
-
+			
 			if (SDL_HasIntersection(&pcRect, &bulletRect))  //  PC ------
 			{
 				pc->changeHP(-bullet->getDamage()); // Apply damage
@@ -338,6 +358,27 @@ void Game::checkCollision()
 			}
 		}
 	}
+
+	for (GameObject* wall : movingWalls)
+	{
+		if (wall->getAliveState() == true)
+		{
+			objectRect.x = wall->getX();
+			objectRect.y = wall->getY();
+			
+			if (SDL_HasIntersection(&pcRect, &objectRect))
+			{
+				pc->stop();
+				pc->setY(pc->getY()+(20*frameTime));
+			}
+
+			if (wall->getX() > SCREEN_WIDTH || wall->getY() > SCREEN_HEIGHT)
+			{
+				wall->setAlive(false);
+				std::cout << "destroyed" << wall;
+			}
+		}
+	}
 }
 
 void Game::update(float frameTime)
@@ -375,11 +416,16 @@ void Game::update(float frameTime)
 
 	for (GameObject* wall : walls)
 	{
-		if (wall->getAliveState()) { wall->update(); }
+		if (wall->getAliveState()) { wall->update(frameTime); }
+	}
+
+	for (GameObject* wall : movingWalls)
+	{
+		if (wall->getAliveState()) { wall->update(frameTime); }
 	}
 	
 	checkAttacks();
-	checkCollision();
+	checkCollision(frameTime);
 }
 
 void Game::render()
@@ -403,6 +449,11 @@ void Game::render()
 	}
 
 	for (GameObject* wall : walls)
+	{
+		if (wall->getAliveState()) { wall->render(); }
+	}
+
+	for (GameObject* wall : movingWalls)
 	{
 		if (wall->getAliveState()) { wall->render(); }
 	}

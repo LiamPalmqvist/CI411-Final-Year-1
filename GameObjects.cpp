@@ -39,8 +39,10 @@ bool GameObject::getAliveState()
 
 
 // ======================================================= 
-void GameObject::update()
+void GameObject::update(float frameTime)
 {	// update the display Rectangle Position
+	setY(getY() + (yVel * frameTime));
+
 	destRect.x = (int)x;
 	destRect.y = (int)y;
 }//---

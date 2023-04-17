@@ -74,6 +74,10 @@
     <IncludePath>C:\Users\liampalmqvist\OneDrive - University of Brighton\Documents\Libraries\SDL\include;C:\Users\Liamp\OneDrive - University of Brighton\Documents\Libraries\SDL\include;$(IncludePath)</IncludePath>
     <LibraryPath>C:\Users\Liamp\OneDrive - University of Brighton\Documents\Libraries\SDL\lib\x64;C:\Users\liampalmqvist\OneDrive - University of Brighton\Documents\Libraries\SDL\lib\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>C:\Users\liampalmqvist\OneDrive - University of Brighton\Documents\Libraries\SDL\include;C:\Users\Liamp\OneDrive - University of Brighton\Documents\Libraries\SDL\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\Liamp\OneDrive - University of Brighton\Documents\Libraries\SDL\lib\x64;C:\Users\liampalmqvist\OneDrive - University of Brighton\Documents\Libraries\SDL\lib\x64;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -129,6 +133,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL2_ttf.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

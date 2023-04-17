@@ -8,7 +8,7 @@ class GameObject
 public:
 	GameObject();
 	GameObject(const char* spriteFileName, float xPos, float yPos);
-	void update();
+	void update(float frameTime);
 	void render();
 	void setSize(int width, int height);
 	bool getAliveState();
@@ -24,6 +24,7 @@ public:
 	float getY() { return y; }
 	void setX(float newX) { x = newX; }
 	void setY(float newY) { y = newY; }
+	void setYVel(float vel) { yVel = vel; }
 
 protected: // derived classes can access
 	bool isActive = false;

@@ -28,7 +28,7 @@ public:
 	void loadMap(int levelNumber);
 	void handleEvents();
 	void checkAttacks();
-	void checkCollision();
+	void checkCollision(float frameTime);
 	void update(float frametime);
 	void render();
 	void closeSDL();
