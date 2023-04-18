@@ -9,8 +9,8 @@
 
 
 // Constants
-#define SCREEN_WIDTH  800
-#define SCREEN_HEIGHT 600
+#define SCREEN_WIDTH  1920
+#define SCREEN_HEIGHT 1080
 #define ROWS = 18
 #define COLUMNS = 25
 #define SPRITE_SIZE 32
@@ -41,7 +41,8 @@ private:
 	SDL_Window* gameWindow = nullptr;
 
 	int coolDown = 0;
-	int bulletTier = 0;
+	int points = 0;
+	int bulletTier = 3;
 	int activeItems = 0;
 	int activeNPCs = 0;
 };

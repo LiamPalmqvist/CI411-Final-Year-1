@@ -9,9 +9,9 @@ GameInput playerInput;
 
 // Game Objects
 PlayerCharacter* pc = nullptr;
-GameObject* walls[200];
+GameObject* walls[400];
 GameObject* movingWalls[450];
-Projectile* bulletsPC[20] = {};
+Projectile* bulletsPC[1000] = {};
 NPC* npcs[20];
 Projectile* bulletsNPC[20] = {};
 Levels* levelMaps = nullptr;
@@ -55,7 +55,7 @@ void Game::createGameObjects()
 	// Create wall objects but do not enable
 	for (int i = 0; i < sizeof(walls) / sizeof(walls[0]); i++)
 	{
-		walls[i] = new GameObject("assets/images/wall.png", 0, 0);
+		walls[i] = new GameObject("assets/images/wall_2.png", 0, 0);
 	}
 
 	for (int i = 0; i < sizeof(movingWalls) / sizeof(movingWalls[0]); i++)
@@ -63,23 +63,15 @@ void Game::createGameObjects()
 		movingWalls[i] = new GameObject("assets/images/Square_Cross_Blue.png", 0, 0);
 		movingWalls[i]->setYVel(20);
 	}
-	loadMap(5);
+	loadMap(4);
 }//----
 
 void Game::loadMap(int levelNumber)
 {
 	std::cout << "\nLoading Level " << levelNumber;
-	/*for (int row = 0; row < 19; row++)
+	for (int row = 32; row > -1; row--)
 	{
-		for (int col = 0; col < 25; col++)
-		{
-			std::cout << levelMaps.getTileContent(levelNumber, row, col);
-		}
-	}
-	*/
-	for (int row = 0; row < 18; row++)
-	{
-		for (int col = 0; col < 25; col++)
+		for (int col = 17; col > -1; col--)
 		{
 			if (levelMaps->getTileContent(levelNumber, col, row) == 1) //  Terrain 
 			{
@@ -88,7 +80,7 @@ void Game::loadMap(int levelNumber)
 					if (wall->getAliveState() == false)
 					{
 						wall->setAlive(true);
-						wall->setX(col * SPRITE_SIZE);
+						wall->setX((SCREEN_WIDTH/3) + (col * SPRITE_SIZE));
 						wall->setY(row * SPRITE_SIZE);
 						break;
 					}
@@ -97,7 +89,7 @@ void Game::loadMap(int levelNumber)
 
 			if (levelMaps->getTileContent(levelNumber, col, row) == 2) // PC
 			{
-				pc->setX(col * SPRITE_SIZE);
+				pc->setX((SCREEN_WIDTH / 3) + (col * SPRITE_SIZE));
 				pc->setY(row * SPRITE_SIZE);
 			}
 
@@ -109,7 +101,7 @@ void Game::loadMap(int levelNumber)
 					if (npc->getAliveState() == false)
 					{
 						npc->setAlive(true);
-						npc->setX(col * SPRITE_SIZE);
+						npc->setX((SCREEN_WIDTH / 3) + (col * SPRITE_SIZE));
 						npc->setY(row * SPRITE_SIZE);
 						break;
 					}
@@ -137,7 +129,7 @@ void Game::loadMap(int levelNumber)
 					if (block->getAliveState() == false)
 					{
 						block->setAlive(true);
-						block->setX(col * SPRITE_SIZE);
+						block->setX((SCREEN_WIDTH / 3) + (col * SPRITE_SIZE));
 						block->setY(row * SPRITE_SIZE);
 						break;
 					}
@@ -172,12 +164,43 @@ void Game::checkAttacks()
 			break;
 
 		case 1:
-			for (Projectile* bullet : bulletsPC)
+			for (int i = 0; i < sizeof(bulletsPC) / sizeof(bulletsPC[0]); i += 2)
 			{
-				if (bullet->getAliveState() == false && coolDown <= 0)
+				if (bulletsPC[i]->getAliveState() == false && coolDown <= 0)
+				{	// fire in the opposite direction the pc is facing
+					
+					bulletsPC[i]->fire((pc->getX() + SPRITE_SIZE / 2) - 4, pc->getY() + 1, 0);
+					bulletsPC[i+1]->fire((pc->getX() + SPRITE_SIZE / 4) + 4, (pc->getY() + SPRITE_SIZE), 180);
+					coolDown = 6; // Set the cooldown
+					break; // stop checking the array
+				}
+			}
+			break;
+		case 2:
+			for (int i = 0; i < sizeof(bulletsPC) / sizeof(bulletsPC[0]); i += 4)
+			{
+				if (bulletsPC[i]->getAliveState() == false && coolDown <= 0)
 				{	// fire in the opposite direction the pc is facing
 
-					bullet->fire((pc->getX() + SPRITE_SIZE / 4) + 4, (pc->getY() + SPRITE_SIZE), 180);
+					bulletsPC[i]->fire((pc->getX() + SPRITE_SIZE / 2) - 8, pc->getY() + 1, 0);
+					bulletsPC[i + 1]->fire((pc->getX() + SPRITE_SIZE / 2), pc->getY() + 1, 0);
+					bulletsPC[i + 2]->fire((pc->getX() + SPRITE_SIZE / 4) + 8, (pc->getY() + SPRITE_SIZE), 180);
+					bulletsPC[i + 3]->fire((pc->getX() + SPRITE_SIZE / 4), (pc->getY() + SPRITE_SIZE), 180);
+					coolDown = 6; // Set the cooldown
+					break; // stop checking the array
+				}
+			}
+			break;
+		case 3:
+			for (int i = 0; i < sizeof(bulletsPC) / sizeof(bulletsPC[0]); i += 4)
+			{
+				if (bulletsPC[i]->getAliveState() == false && coolDown <= 0)
+				{	// fire in the opposite direction the pc is facing
+
+					bulletsPC[i]->fire((pc->getX() + SPRITE_SIZE / 2) - 8, pc->getY() + 1, 0);
+					bulletsPC[i + 1]->fire((pc->getX() + SPRITE_SIZE / 4) + 8, (pc->getY() + SPRITE_SIZE), 180);
+					bulletsPC[i + 2]->fire((pc->getX() + SPRITE_SIZE), (pc->getY() + SPRITE_SIZE / 4), 90);
+					bulletsPC[i + 3]->fire((pc->getX() + SPRITE_SIZE / 4), (pc->getY() + SPRITE_SIZE / 4) + 8, 270);
 					coolDown = 6; // Set the cooldown
 					break; // stop checking the array
 				}
@@ -268,7 +291,7 @@ void Game::checkCollision(float frameTime)
 				pc->stop(); // Stop the PC moving
 			}
 
-			
+
 			for (NPC* npc : npcs) // NPCs ---------
 			{
 				if (npc->getAliveState() == true)
@@ -282,7 +305,7 @@ void Game::checkCollision(float frameTime)
 					}
 				}
 			}
-			
+
 
 			for (Projectile* bullet : bulletsPC)  // PC  Bullets -----------------
 			{
@@ -303,12 +326,12 @@ void Game::checkCollision(float frameTime)
 
 	for (Projectile* bullet : bulletsNPC)  //  NPC Bullets -----------------
 	{
-		if (bullet->getAliveState() == true)
+		if (bullet->getAliveState())
 		{
 			bulletRect.x = bullet->getX(); // Update the rect
 			bulletRect.y = bullet->getY();
 			bulletRect.w = bulletRect.h = bullet->getSize();
-			
+
 			if (SDL_HasIntersection(&pcRect, &bulletRect))  //  PC ------
 			{
 				pc->changeHP(-bullet->getDamage()); // Apply damage
@@ -334,7 +357,7 @@ void Game::checkCollision(float frameTime)
 	// check what alive NPCs hit -
 	for (NPC* npc : npcs)
 	{
-		if (npc->getAliveState() == true)
+		if (npc->getAliveState())
 		{
 			npcRect.x = npc->getX(); // Update the rect
 			npcRect.y = npc->getY();
@@ -365,11 +388,11 @@ void Game::checkCollision(float frameTime)
 		{
 			objectRect.x = wall->getX();
 			objectRect.y = wall->getY();
-			
+
 			if (SDL_HasIntersection(&pcRect, &objectRect))
 			{
 				pc->stop();
-				pc->setY(pc->getY()+(20*frameTime));
+				pc->setY(pc->getY() + (20 * frameTime));
 			}
 
 			if (wall->getX() > SCREEN_WIDTH || wall->getY() > SCREEN_HEIGHT)
@@ -394,7 +417,6 @@ void Game::update(float frameTime)
 		if (npc->getAliveState())
 		{
 			npc->roam(frameTime);
-			npc->updateNPC();
 			//npc->screenCrawl(frameTime);		
 		}
 	}
@@ -411,7 +433,7 @@ void Game::update(float frameTime)
 
 	for (NPC* npc : npcs)
 	{
-		if (npc->getAliveState()) { npc->updateNPC(); }
+		if (npc->getAliveState()) { points = npc->updateNPC(points); }
 	}
 
 	for (GameObject* wall : walls)

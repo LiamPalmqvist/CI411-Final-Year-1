@@ -330,13 +330,18 @@ void NPC::renderNPC()
 
 }//---
 
-void NPC::updateNPC()
+int NPC::updateNPC(int points)
 {
-	if (health < 0) isActive = false;
+	if (health < 0)
+	{
+		isActive = false;
+		points += 20;
+	}
 
 	//update Drawing Position Rect
 	destRect.x = (int)x;
 	destRect.y = (int)y;
+	return points;
 }//-----
 
 // ======================================================= 

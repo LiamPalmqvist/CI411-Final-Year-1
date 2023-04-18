@@ -111,11 +111,11 @@ private:
 
 // =========================================================================
 
-class NPC :GameObject {
+class NPC : GameObject {
 public:
 	NPC(const char* spriteFileName, int xPos, int yPos, float rotation);
 	void renderNPC();
-	void updateNPC();
+	int updateNPC(int points);
 	void setAlive(bool state) { isActive = state; }
 	bool getAliveState() { return isActive; }
 	void roam(float frameTime);

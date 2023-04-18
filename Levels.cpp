@@ -5,7 +5,7 @@
 int Levels::getTileContent(int level, int x, int y)
 {
 	level = level - 1; // start at 0 in array
-	return levelMaps[level][y][x];
+	return levelMapsNew[level][y][x];
 }//---
 
 
