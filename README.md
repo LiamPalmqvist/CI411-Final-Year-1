@@ -4,4 +4,4 @@ For those actually interested, I'm making a Touhou-like game based on some older
 
 Anyway, this is written almost entirely in C++ using a custom version of the SDL2 rendering library put together by a lecturer of mine.
 
-Development on this game will most likely cease before the 12th of May 2023 as that is basically when this is due in.
+Development on this game will most likely cease before the 12th of May 2023 as that's when this is due in.
