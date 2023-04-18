@@ -177,7 +177,7 @@ void Game::checkAttacks()
 	// This part is for the Player Character
 	if (pc->isFiring()) // Space 
 	{
-		switch (bulletTier)
+		switch (pc->getBulletTier())
 		{
 
 		case 0:
@@ -200,8 +200,8 @@ void Game::checkAttacks()
 				if (bulletsPC[i]->getAliveState() == false && coolDown <= 0)
 				{	// fire in the opposite direction the pc is facing
 					
-					bulletsPC[i]->fire((pc->getX() + SPRITE_SIZE / 2) - 4, pc->getY() + 1, 0);
-					bulletsPC[i+1]->fire((pc->getX() + SPRITE_SIZE / 4) + 4, (pc->getY() + SPRITE_SIZE), 180);
+					bulletsPC[i]->fire((pc->getX() + SPRITE_SIZE / 2) - 4, pc->getY() + 1, 0); // up
+					bulletsPC[i+1]->fire((pc->getX() + SPRITE_SIZE / 4) + 4, (pc->getY() + SPRITE_SIZE), 180); // down
 					coolDown = 6; // Set the cooldown
 					break; // stop checking the array
 				}
@@ -223,15 +223,52 @@ void Game::checkAttacks()
 			}
 			break;
 		case 3:
-			for (int i = 0; i < sizeof(bulletsPC) / sizeof(bulletsPC[0]); i += 4)
+			for (int i = 0; i < sizeof(bulletsPC) / sizeof(bulletsPC[0]); i += 6)
 			{
 				if (bulletsPC[i]->getAliveState() == false && coolDown <= 0)
-				{	// fire in the opposite direction the pc is facing
+				{	// Fire up, down, left, right
+					bulletsPC[i]->fire((pc->getX() + SPRITE_SIZE / 2) - 8, pc->getY() + 1, 0); // up 1
+					bulletsPC[i + 1]->fire((pc->getX() + SPRITE_SIZE / 2), pc->getY() + 1, 0); // up 2
+					bulletsPC[i + 2]->fire((pc->getX() + SPRITE_SIZE / 4) + 8, (pc->getY() + SPRITE_SIZE), 180); // down 1
+					bulletsPC[i + 3]->fire((pc->getX() + SPRITE_SIZE / 4), (pc->getY() + SPRITE_SIZE), 180); // down 2
+					bulletsPC[i + 4]->fire((pc->getX() + SPRITE_SIZE), (pc->getY() + SPRITE_SIZE / 4) + 4, 90); // left
+					bulletsPC[i + 5]->fire((pc->getX() + SPRITE_SIZE / 4), (pc->getY() + SPRITE_SIZE / 4) + 4, 270); // right
+					coolDown = 6; // Set the cooldown
+					break; // stop checking the array
+				}
+			}
+			break;
+		case 4:
+			for (int i = 0; i < sizeof(bulletsPC) / sizeof(bulletsPC[0]); i += 6)
+			{
+				if (bulletsPC[i]->getAliveState() == false && coolDown <= 0)
+				{	// Fire up, down, left, right
+					bulletsPC[i]->fire((pc->getX() + SPRITE_SIZE / 2) - 4, pc->getY() + 1, 0); // up
+					bulletsPC[i + 1]->fire((pc->getX() + SPRITE_SIZE), pc->getY() + 1, 45); // diag up right
+					bulletsPC[i + 2]->fire((pc->getX() + SPRITE_SIZE / 4) + 4, (pc->getY() + SPRITE_SIZE), 180); // down
+					bulletsPC[i + 3]->fire((pc->getX() + SPRITE_SIZE), (pc->getY() + SPRITE_SIZE / 4) + 4, 90); // left
+					bulletsPC[i + 4]->fire((pc->getX() + SPRITE_SIZE / 4), (pc->getY() + SPRITE_SIZE / 4) + 4, 270); // right
+					bulletsPC[i + 5]->fire((pc->getX() - SPRITE_SIZE / 4), (pc->getY() + 1), 315); // diag up left
 
-					bulletsPC[i]->fire((pc->getX() + SPRITE_SIZE / 2) - 8, pc->getY() + 1, 0);
-					bulletsPC[i + 1]->fire((pc->getX() + SPRITE_SIZE / 4) + 8, (pc->getY() + SPRITE_SIZE), 180);
-					bulletsPC[i + 2]->fire((pc->getX() + SPRITE_SIZE), (pc->getY() + SPRITE_SIZE / 4), 90);
-					bulletsPC[i + 3]->fire((pc->getX() + SPRITE_SIZE / 4), (pc->getY() + SPRITE_SIZE / 4) + 8, 270);
+					coolDown = 6; // Set the cooldown
+					break; // stop checking the array
+				}
+			}
+			break;
+		case 5:
+			for (int i = 0; i < sizeof(bulletsPC) / sizeof(bulletsPC[0]); i += 8)
+			{
+				if (bulletsPC[i]->getAliveState() == false && coolDown <= 0)
+				{	// Fire up, down, left, right
+					bulletsPC[i]->fire((pc->getX() + SPRITE_SIZE / 2) - 4, pc->getY() + 1, 0); // up
+					bulletsPC[i + 1]->fire((pc->getX() + SPRITE_SIZE), pc->getY() + 1, 45); // diag up right
+					bulletsPC[i + 2]->fire((pc->getX() + SPRITE_SIZE / 4) + 4, (pc->getY() + SPRITE_SIZE), 180); // down
+					bulletsPC[i + 3]->fire((pc->getX() + SPRITE_SIZE), (pc->getY() + SPRITE_SIZE), 135); // diag down right
+					bulletsPC[i + 4]->fire((pc->getX() + SPRITE_SIZE), (pc->getY() + SPRITE_SIZE / 4) + 4, 90); // left
+					bulletsPC[i + 5]->fire((pc->getX() - SPRITE_SIZE / 4), (pc->getY() + SPRITE_SIZE), 225); // diag down left
+					bulletsPC[i + 6]->fire((pc->getX() + SPRITE_SIZE / 4), (pc->getY() + SPRITE_SIZE / 4) + 4, 270); // right
+					bulletsPC[i + 7]->fire((pc->getX() - SPRITE_SIZE / 4), (pc->getY() + 1), 315); // diag up left
+
 					coolDown = 6; // Set the cooldown
 					break; // stop checking the array
 				}

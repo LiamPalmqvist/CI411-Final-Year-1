@@ -59,6 +59,10 @@ public:
 	float getHP() { return health; }
 	void changeHP(float hpChange) { health += hpChange; }
 	bool isFiring() { return firing; }
+	int getBulletTier() { return bulletTier; }
+	void setBulletTier(int tier) { bulletTier = tier; }
+	void increaseBulletTier() { if (bulletTier == 5) return; else bulletTier++; }
+	void decreaseBulletTier() { if (bulletTier == 0) return; else bulletTier--; }
 
 	float getVelX() { return xVel; }
 	float getVelY() { return yVel; }
@@ -76,6 +80,7 @@ private:
 	float aDown = false;
 	float dDown = false;
 	float firing = false;
+	int bulletTier = 0;
 	float drag = 0.9F;
 	float acceleration = 50;
 

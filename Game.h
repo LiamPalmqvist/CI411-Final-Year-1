@@ -43,7 +43,6 @@ private:
 
 	int coolDown = 0;
 	int points = 0;
-	int bulletTier = 3;
 	int activeItems = 0;
 	int activeNPCs = 0;
 };

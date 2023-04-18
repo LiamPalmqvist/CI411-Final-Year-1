@@ -219,6 +219,16 @@ void PlayerCharacter::smoothMove(int keyDown, int keyUp, float frameTime)
 		break;
 	}
 
+	// switch firing modes
+	if (keyDown == 48)
+	{
+		increaseBulletTier();
+	}
+	else if (keyDown == 47)
+	{
+		decreaseBulletTier();
+	}
+
 	// WSAD /// Add Acceleration
 	if (wDown) yVel -= acceleration * frameTime;
 	if (aDown) yVel += acceleration * frameTime;
