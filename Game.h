@@ -15,6 +15,7 @@
 #define COLUMNS = 25
 #define SPRITE_SIZE 32
 #define FPS 75
+#define MAP_HEIGHT 50
 
 
 // ======================================================= 

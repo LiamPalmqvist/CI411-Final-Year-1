@@ -38,6 +38,12 @@ bool GameObject::getAliveState()
 }//---
 
 
+void GameObject::moveDown(float frameTime)
+{	// update the display Rectangle Position
+	yVel = -cos(angle * M_PI / 180) * speed * frameTime;
+	y += yVel;
+}//---
+
 // ======================================================= 
 void GameObject::update(float frameTime)
 {	// update the display Rectangle Position
@@ -343,6 +349,12 @@ int NPC::updateNPC(int points)
 	destRect.y = (int)y;
 	return points;
 }//-----
+
+void NPC::moveDown(float frameTime)
+{	// update the display Rectangle Position
+	yVel = -cos(angle * M_PI / 180) * speed * frameTime;
+	y += yVel;
+}//---
 
 // ======================================================= 
 

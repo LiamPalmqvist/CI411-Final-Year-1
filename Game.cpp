@@ -9,7 +9,9 @@ GameInput playerInput;
 
 // Game Objects
 PlayerCharacter* pc = nullptr;
-GameObject* walls[400];
+GameObject* grid;
+GameObject* background[2];
+GameObject* walls[80];
 GameObject* movingWalls[450];
 Projectile* bulletsPC[1000] = {};
 NPC* npcs[20];
@@ -25,14 +27,30 @@ void Game::createGameObjects()
 
 	printf("\nCreating Game Objects");
 	
+	// Create the background first as it is the first layer
+	background[0] = new GameObject("assets/images/background.jpg", SCREEN_WIDTH/3, 0);
+	background[1] = new GameObject("assets/images/background.jpg", SCREEN_WIDTH/3, -1080);
+	background[0]->setSize(720, 1080);
+	background[1]->setSize(720, 1080);
+	// Set these to be active all the time
+	background[0]->setAlive(true); 
+	background[1]->setAlive(true);
+	background[0]->setYVel(20);
+	background[1]->setYVel(20);
+	
+	// This will be the UI later
+	grid = new GameObject("assets/images/grid_updated.png", 0, 0);
+	grid->setSize(1920, 1080);
+	grid->setAlive(true);
+	
 	// Create Game Objects - filename , x and y pos, initial angle
 	pc = new PlayerCharacter("assets/images/playerSprite.png", (SCREEN_WIDTH/2-SPRITE_SIZE/2), (SCREEN_HEIGHT/2-SPRITE_SIZE/2), 0);
 
 	// Create an Array of NPCs
 	for (int i = 0; i < sizeof(npcs) / sizeof(npcs[0]); i++)
 	{
-		npcs[i] = new NPC("assets/images/Circle_Red.png", 0, 0, 0);
-		npcs[i]->setSpeed(64);
+		npcs[i] = new NPC("assets/images/Circle_Red.png", -100, -100, 180);
+		npcs[i]->setSpeed(20);
 		npcs[i]->setNextShotTime(rand() % 10000); // Set Random shot time upto 10 Secs
 	}
 
@@ -55,7 +73,7 @@ void Game::createGameObjects()
 	// Create wall objects but do not enable
 	for (int i = 0; i < sizeof(walls) / sizeof(walls[0]); i++)
 	{
-		walls[i] = new GameObject("assets/images/wall_2.png", 0, 0);
+		walls[i] = new GameObject("assets/images/blank.png", 0, 0);
 	}
 
 	for (int i = 0; i < sizeof(movingWalls) / sizeof(movingWalls[0]); i++)
@@ -63,34 +81,45 @@ void Game::createGameObjects()
 		movingWalls[i] = new GameObject("assets/images/Square_Cross_Blue.png", 0, 0);
 		movingWalls[i]->setYVel(20);
 	}
-	loadMap(4);
+	loadMap(5);
 }//----
 
 void Game::loadMap(int levelNumber)
 {
-	std::cout << "\nLoading Level " << levelNumber;
-	for (int row = 32; row > -1; row--)
+	for (int row = 0; row < 35; row++)
 	{
-		for (int col = 17; col > -1; col--)
+		for (int col = 0; col < 2; col++)
 		{
-			if (levelMaps->getTileContent(levelNumber, col, row) == 1) //  Terrain 
+			// Setting walls for the player
+			for (GameObject* wall : walls)
 			{
-				for (GameObject* wall : walls)
+				if (wall->getAliveState() == false)
 				{
-					if (wall->getAliveState() == false)
+					wall->setAlive(true);
+					if (col == 0)
 					{
-						wall->setAlive(true);
-						wall->setX((SCREEN_WIDTH/3) + (col * SPRITE_SIZE));
-						wall->setY(row * SPRITE_SIZE);
-						break;
+						wall->setX((SCREEN_WIDTH / 3));
 					}
+					else if (col == 1)
+					{
+						wall->setX((2 * (SCREEN_WIDTH / 3)) - 2 * SPRITE_SIZE);
+					}
+					wall->setY((row * SPRITE_SIZE));
+					break;
 				}
 			}
+		}
+	}
+
+	for (int row = MAP_HEIGHT; row > -1; row--)
+	{
+		for (int col = 17; col > 0; col--)
+		{
 
 			if (levelMaps->getTileContent(levelNumber, col, row) == 2) // PC
 			{
 				pc->setX((SCREEN_WIDTH / 3) + (col * SPRITE_SIZE));
-				pc->setY(row * SPRITE_SIZE);
+				pc->setY((row * SPRITE_SIZE) - SCREEN_HEIGHT / 2);
 			}
 
 			
@@ -102,7 +131,21 @@ void Game::loadMap(int levelNumber)
 					{
 						npc->setAlive(true);
 						npc->setX((SCREEN_WIDTH / 3) + (col * SPRITE_SIZE));
-						npc->setY(row * SPRITE_SIZE);
+						npc->setY((row * SPRITE_SIZE) - SCREEN_HEIGHT / 2);
+						break;
+					}
+				}
+			}
+
+			if (levelMaps->getTileContent(levelNumber, col, row) == 5) //  Moving blocks
+			{
+				for (GameObject* block : movingWalls)
+				{
+					if (block->getAliveState() == false)
+					{
+						block->setAlive(true);
+						block->setX((SCREEN_WIDTH / 3) + (col * SPRITE_SIZE));
+						block->setY((row * SPRITE_SIZE) - SCREEN_HEIGHT/2);
 						break;
 					}
 				}
@@ -122,19 +165,7 @@ void Game::loadMap(int levelNumber)
 				}
 			}
 			*/
-			if (levelMaps->getTileContent(levelNumber, col, row) == 5) //  Moving blocks
-			{
-				for (GameObject* block : movingWalls)
-				{
-					if (block->getAliveState() == false)
-					{
-						block->setAlive(true);
-						block->setX((SCREEN_WIDTH / 3) + (col * SPRITE_SIZE));
-						block->setY(row * SPRITE_SIZE);
-						break;
-					}
-				}
-			}
+			
 	
 		}
 	}
@@ -409,6 +440,13 @@ void Game::update(float frameTime)
 	// Ensure Frame rate is at the delay speed and convert to deltaTime
 	if (frameTime < 1000 * (float)1 / FPS) frameTime = (float)1 / FPS;
 
+	for (GameObject* image : background)
+	{
+		image->update(frameTime);
+	}
+
+	grid->update(frameTime);
+
 	pc->updatePC(playerInput.keyDown, playerInput.keyUp, frameTime);
 	
 	// Set NPC Behaviours
@@ -416,7 +454,14 @@ void Game::update(float frameTime)
 	{
 		if (npc->getAliveState())
 		{
-			npc->roam(frameTime);
+			if (npc->getY() > 0)
+			{
+				npc->roam(frameTime);
+			}
+			else
+			{
+				npc->moveDown(frameTime);
+			}
 			//npc->screenCrawl(frameTime);		
 		}
 	}
@@ -453,6 +498,14 @@ void Game::update(float frameTime)
 void Game::render()
 {
 	SDL_RenderClear(renderer);
+
+	for (GameObject* image : background)
+	{
+		if (image->getAliveState()) { image->render(); }
+	}
+
+	grid->render();
+
 	pc->renderPC();
 	
 	for (Projectile* bullet : bulletsPC)

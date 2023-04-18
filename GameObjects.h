@@ -9,6 +9,7 @@ public:
 	GameObject();
 	GameObject(const char* spriteFileName, float xPos, float yPos);
 	void update(float frameTime);
+	void moveDown(float frameTime);
 	void render();
 	void setSize(int width, int height);
 	bool getAliveState();
@@ -115,6 +116,7 @@ class NPC : GameObject {
 public:
 	NPC(const char* spriteFileName, int xPos, int yPos, float rotation);
 	void renderNPC();
+	void moveDown(float frameTime);
 	int updateNPC(int points);
 	void setAlive(bool state) { isActive = state; }
 	bool getAliveState() { return isActive; }
