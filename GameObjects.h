@@ -25,6 +25,8 @@ public:
 	float getY() { return y; }
 	void setX(float newX) { x = newX; }
 	void setY(float newY) { y = newY; }
+	void setAngle(float newAngle) { angle = newAngle; }
+	int getAngle() { return angle; }
 	void setYVel(float vel) { yVel = vel; }
 
 protected: // derived classes can access
@@ -62,7 +64,7 @@ public:
 	int getBulletTier() { return bulletTier; }
 	void setBulletTier(int tier) { bulletTier = tier; }
 	void increaseBulletTier() { if (bulletTier == 5) return; else bulletTier++; }
-	void decreaseBulletTier() { if (bulletTier == 0) return; else bulletTier--; }
+	void decreaseBulletTier();
 
 	float getVelX() { return xVel; }
 	float getVelY() { return yVel; }
@@ -83,7 +85,6 @@ private:
 	int bulletTier = 0;
 	float drag = 0.9F;
 	float acceleration = 50;
-
 };
 
 // =========================================================================

@@ -1,7 +1,7 @@
 // CI411_Final_Year_1_Liam_Palmqvist.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
 
-#include "Game.h" 
+#include "Game.h"
 
 // Variables
 Game* game = nullptr;
@@ -17,7 +17,8 @@ int main(int argc, char* argv[])
 	game = new Game;
 
 	// Start SDL & Create the Game Window
-	game->startSDL("CI411 SDL Example");
+	game->startSDL("CI411 SDL Final - Liam Palmqvist");
+
 	game->createGameObjects();
 
 	// Main Game Loop

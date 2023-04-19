@@ -8,6 +8,11 @@ int Levels::getTileContent(int level, int x, int y)
 	return levelMapsNew[level][y][x];
 }//---
 
+int Levels::getLevelLength(int level)
+{
+	return levelMapLength[level-1];
+}
+
 /* 
 void Levels::setTileContent(int level, int x, int y, int newObject)
 {
