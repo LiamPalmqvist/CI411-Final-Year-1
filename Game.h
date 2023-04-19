@@ -4,6 +4,7 @@
 // Libraries / Headers to include 
 #include <SDL.h>
 #include <SDL_Image.h>
+#include <SDL_ttf.h>
 #include <iostream>
 #include <string>
 
@@ -15,7 +16,7 @@
 #define COLUMNS = 25
 #define SPRITE_SIZE 32
 #define FPS 75
-#define MAP_HEIGHT 50
+#define MAP_HEIGHT 500
 
 
 // ======================================================= 
@@ -26,20 +27,25 @@ public:
 	bool isRunning() { return gameRunning; }
 	void startSDL(const char* title);
 	void createGameObjects();
+	void checkGameStates();
 	void loadMap(int levelNumber);
 	void handleEvents();
 	void checkAttacks();
 	void checkCollision(float frameTime);
 	void update(float frametime);
+	void updateGUI();
 	void render();
 	void closeSDL();
 
 	static SDL_Renderer* renderer;
 	static SDL_Event playerInputEvent;
 
+	SDL_Window* gameWindow = nullptr;
+
 private:
 	bool gameRunning = false;
-	SDL_Window* gameWindow = nullptr;
+	int hurtTimer = 100;
+	bool hurt = false;
 
 	int coolDown = 0;
 	int points = 0;

@@ -69,7 +69,7 @@ void GameObject::setSize(int width, int height) // if sprite is non standard siz
 void GameObject::render()
 {
 	// add the Sprite to the Render Image
-	SDL_RenderCopy(Game::renderer, spriteTexture, &srcRect, &destRect);
+	SDL_RenderCopyEx(Game::renderer, spriteTexture, &srcRect, &destRect, angle, NULL, SDL_FLIP_NONE);
 }//---
 
 // ======================================================= 
@@ -254,6 +254,18 @@ void PlayerCharacter::smoothMove(int keyDown, int keyUp, float frameTime)
 	//screenBounce();
 }//---
 
+void PlayerCharacter::decreaseBulletTier() 
+{ 
+	if (bulletTier == 0)
+	{
+		return;
+	}
+	else
+	{
+		bulletTier--;
+	}
+	
+}
 
 void PlayerCharacter::stop()
 {
