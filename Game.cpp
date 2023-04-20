@@ -20,6 +20,13 @@ NPC* npcs[20];
 Projectile* bulletsNPC[200] = {};
 Levels* levelMaps = nullptr;
 
+
+// Menu Objects
+GameObject* menuBackground;
+GameObject* levelPreview[3];
+GameObject* levelNumber[3];
+GameObject* selectionFrame;
+
 // Text
 // Gobal Text Variables
 TTF_Font* font = nullptr;
@@ -28,28 +35,23 @@ SDL_Color textColour = { 255, 255, 200 };
 SDL_Surface* textSurface = nullptr;
 SDL_Texture* textTexture = nullptr;
 
+
 // ======================================================= 
 
 void Game::createGameObjects()
 {
+	
 	levelMaps = new Levels;
 
 	printf("\nCreating Game Objects");
-	
-	// Create the background first as it is the first layer
-	background[0] = new GameObject("assets/images/background.jpg", SCREEN_WIDTH / 3, 0);
-	background[1] = new GameObject("assets/images/background.jpg", SCREEN_WIDTH / 3, -1080);
-	background[2] = new GameObject("assets/images/background.jpg", SCREEN_WIDTH / 3, -2160);
-	background[0]->setSize(720, 1080);
-	background[1]->setSize(720, 1080);
-	background[2]->setSize(720, 1080);
-	// Set these to be active all the time
-	background[0]->setAlive(true);
-	background[1]->setAlive(true);
-	background[2]->setAlive(true);
-	background[0]->setYVel(40);
-	background[1]->setYVel(40);
-	background[2]->setYVel(40);
+
+	for (int i = 0; i < sizeof(background) / sizeof(background[0]); i++)
+	{
+		background[i] = new GameObject("assets/images/background.jpg", SCREEN_WIDTH / 3, (-1080 * i));
+		background[i]->setSize(720, 1080);
+		background[i]->setAlive(true); // This will be phased out to be set alive with the other gameObjects once level loading works
+		background[i]->setYVel(40);
+	}
 	
 	// This will be the UI later
 	grid = new GameObject("assets/images/grid_updated.png", 0, 0);
@@ -103,12 +105,52 @@ void Game::createGameObjects()
 		movingWalls[i] = new GameObject("assets/images/Square_Cross_Blue.png", 0, 0);
 		movingWalls[i]->setYVel(0);
 	}
-	loadMap(5);
+	
+	printf("\nCreating Menu Objects");
+
+	menuBackground = new GameObject("assets/images/menu_Background.png", 0, 0);
+	menuBackground->setSize(1920, 1080);
+	menuBackground->setAlive(true);
+	menuBackground->setYVel(0);
+
+	levelPreview[0] = new GameObject("assets/images/levelpreviewTemp.png", 80, 280);
+	levelPreview[1] = new GameObject("assets/images/levelpreviewTemp.png", 720, 280);
+	levelPreview[2] = new GameObject("assets/images/levelpreviewTemp.png", 1360, 280);
+	for (int i = 0; i < sizeof(levelPreview) / sizeof(levelPreview[0]); i++)
+	{		
+		levelPreview[i]->setSize(480, 640);
+		levelPreview[i]->setAlive(true);
+		levelPreview[i]->setYVel(0);
+	}
+
+	levelNumber[0] = new GameObject("assets/images/level1temp.png", 80, 920);
+	levelNumber[1] = new GameObject("assets/images/level2temp.png", 720, 920);
+	levelNumber[2] = new GameObject("assets/images/level3temp.png", 1360, 920);
+	for (int i = 0; i < sizeof(levelNumber) / sizeof(levelNumber[0]); i++)
+	{
+		levelNumber[i]->setSize(480, 80);
+		levelNumber[i]->setAlive(true);
+		levelNumber[i]->setYVel(0);
+	}
+
+	selectionFrame = new GameObject("assets/images/frame.png", 60, 260);
+	selectionFrame->setSize(520, 760);
+	selectionFrame->setAlive(true);
+	selectionFrame->setYVel(0);
+
 }//----
 
 void Game::loadMap(int levelNumber)
 {
 	unloadMap();
+
+	for (GameObject* image : background)
+	{
+		image->setAlive(true);
+	}
+
+	grid->setAlive(true);
+
 	levelMaps->getLevelLength(1);
 	for (int row = 0; row < 35; row++)
 	{
@@ -205,7 +247,6 @@ void Game::unloadMap()
 	pc->setY(0);
 	pc->setHP(100);
 
-
 	// Unsetting walls for the player
 	for (GameObject* wall : walls)
 	{
@@ -254,7 +295,51 @@ void Game::unloadMap()
 			bullet->setAlive(false);
 		}
 	}
+
+	for (GameObject* image : background)
+	{
+		image->setAlive(false);
+	}
+
+	grid->setAlive(false);
+	
+	pc_flash->setAlive(false);
+
 }//---
+
+void Game::loadMenu()
+{
+	menuBackground->setAlive(true);
+
+	for (GameObject* menuItem : levelPreview)
+	{
+		menuItem->setAlive(true);
+	}
+
+	for (GameObject* menuItem : levelNumber)
+	{
+		menuItem->setAlive(true);
+	}
+
+	selectionFrame->setAlive(true);
+}
+
+void Game::unloadMenu()
+{
+	menuBackground->setAlive(false);
+	
+	for (GameObject* menuItem : levelPreview)
+	{
+		menuItem->setAlive(false);
+	}
+	
+	for (GameObject* menuItem : levelNumber)
+	{
+		menuItem->setAlive(false);
+	}
+
+	selectionFrame->setAlive(false);
+}
 
 void Game::checkAttacks()
 {
@@ -408,18 +493,82 @@ void Game::handleEvents()
 	case SDL_KEYDOWN:
 		std::cout << "\n" << playerInputEvent.key.keysym.scancode << " + " << playerInputEvent.key.keysym.mod << " down.";
 		playerInput.keyDown = playerInputEvent.key.keysym.scancode;
+		if (playerInputEvent.key.keysym.scancode == SDL_SCANCODE_ESCAPE)
+		{
+			isInMenu = false;
+			isInLevel = true;
+			unloadMenu();
+		}
+		else if (playerInputEvent.key.keysym.scancode == SDL_SCANCODE_1)
+		{
+			loadMap(1);
+			isInMenu = false;
+			isInLevel = true;
+			unloadMenu();
+		}
 		break;
 
 	case SDL_KEYUP:
 		// std::cout << "\n" << playerInputEvent.key.keysym.scancode << " + " << playerInputEvent.key.keysym.mod << " up.";
 		playerInput.keyUp = playerInputEvent.key.keysym.scancode;
-		if (playerInputEvent.key.keysym.scancode == SDL_SCANCODE_BACKSPACE)
+		break;
+
+	default:
+		break;
+	}
+}//---
+
+void Game::handleMenuEvents()
+{
+	// Reset Inputs
+	playerInput.keyDown = NULL;
+	playerInput.keyUp = NULL;
+
+	//Check for Events
+	SDL_PollEvent(&playerInputEvent);
+
+	switch (playerInputEvent.type)
+	{
+	case SDL_QUIT:
+		gameRunning = false;
+		break;
+
+	case SDL_KEYDOWN:
+		if (playerInputEvent.key.keysym.scancode == SDL_SCANCODE_LEFT)
 		{
-			unloadMap();
+			if (mapSelected > 1)
+			{
+				mapSelected--;
+				selectionFrame->setX(selectionFrame->getX() - 640);
+			}
+			else
+			{
+				break;
+			}
 		}
-		else if (playerInputEvent.key.keysym.scancode == SDL_SCANCODE_1)
+		else if (playerInputEvent.key.keysym.scancode == SDL_SCANCODE_RIGHT)
 		{
-			loadMap(1);
+			if (mapSelected <= 2)
+			{
+				mapSelected++;
+				selectionFrame->setX(selectionFrame->getX() + 640);
+				for (int i = 0; i < 500; i++)
+				{
+					std::cout << "";
+				}
+			}
+			else
+			{
+				break;
+			}
+		}
+		else if (playerInputEvent.key.keysym.scancode == SDL_SCANCODE_RETURN)
+		{
+			loadMap(mapSelected+2);
+			std::cout << "loaded map: " << mapSelected;
+			isInMenu = false;
+			isInLevel = true;
+			unloadMenu();
 		}
 		break;
 
@@ -725,7 +874,7 @@ void Game::update(float frameTime)
 	{
 		if (wall->getAliveState()) { wall->update(frameTime); wall->setYVel(20); }
 	}
-	
+
 	checkAttacks();
 	checkCollision(frameTime);
 }
@@ -734,12 +883,18 @@ void Game::render()
 {
 	SDL_RenderClear(renderer);
 
+	// Menu stuff
+
+	if (menuBackground->getAliveState()) { menuBackground->render(); }
+
+	// Game stuff
+
 	for (GameObject* image : background)
 	{
 		if (image->getAliveState()) { image->render(); }
 	}
 
-	grid->render();
+	if (grid->getAliveState()) grid->render();
 
 	pc->renderPC();
 
@@ -774,14 +929,73 @@ void Game::render()
 	{
 		if (wall->getAliveState()) { wall->render(); }
 	}
+
 	updateGUI();
 	SDL_RenderPresent(renderer); 	// Update the screen
 	checkGameStates();
 }//---
 
+void Game::updateMenu(float frameTime)
+{
+	if (menuBackground->getAliveState()) { menuBackground->update(frameTime); }
+
+	for (GameObject* menuItem : levelNumber)
+	{
+		if (menuItem->getAliveState())
+		{
+			menuItem->update(frameTime);
+		}
+	}
+
+	for (GameObject* menuItem : levelPreview)
+	{
+		if (menuItem->getAliveState())
+		{
+			menuItem->update(frameTime);
+		}
+	}
+
+	selectionFrame->update(frameTime);
+}
+
+void Game::renderMenu()
+{
+	SDL_RenderClear(renderer);
+
+	// Menu stuff
+
+	if (menuBackground->getAliveState()) {
+		menuBackground->render();
+	}
+
+	for (GameObject* menuItem : levelNumber)
+	{
+		if (menuItem->getAliveState())
+		{
+			menuItem->render();
+		}
+	}
+
+	for (GameObject* menuItem : levelPreview)
+	{
+		if (menuItem->getAliveState())
+		{
+			menuItem->render();
+		}
+	}
+
+	if (selectionFrame->getAliveState()) selectionFrame->render();
+
+	updateMenuGUI();
+	SDL_RenderPresent(renderer); 	// Update the screen
+}
+
 void Game::updateGUI()
 {
+	
 	std::string  screenText;
+	
+	/*
 	SDL_Rect textRect = { 8,8,0,0 }; // start position of the text
 
 	// text to be on screen Left Side	
@@ -794,10 +1008,10 @@ void Game::updateGUI()
 	textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
 	SDL_QueryTexture(textTexture, NULL, NULL, &textRect.w, &textRect.h);
 	SDL_RenderCopy(renderer, textTexture, NULL, &textRect);
-
+	*/
 
 	// text to be on screen Right Side
-	textRect = { 1250,100,0,0 }; // start position of the text
+	SDL_Rect textRect = { 1250,100,0,0 }; // start position of the text
 	screenText = "HP: " + std::to_string(int(pc->getHP()));
 	screenText += "\n\nTime: " + std::to_string(SDL_GetTicks64() / 1000);
 	screenText += "\n\nPoints: " + std::to_string(points);
@@ -816,6 +1030,32 @@ void Game::updateGUI()
 	SDL_DestroyTexture(textTexture);
 
 }//--
+
+void Game::updateMenuGUI()
+{
+	/*
+	std::string  screenText;
+	SDL_Rect textRect = { 1250,100,0,0 }; // start position of the text
+	// text to be on screen Right Side
+	screenText = "Level selected: " + std::to_string(int(mapSelected));
+	screenText += "\n\nPosition ";
+	screenText += "\n\nX: " + std::to_string(selectionFrame->getX());
+	screenText += "\n\nY: " + std::to_string(selectionFrame->getY());
+	textColour = { 0, 255, 0 };
+
+	// render the text to screen
+	// This line below is what actually adds the text to the game
+	textSurface = TTF_RenderText_Blended_Wrapped(font2, screenText.c_str(), textColour, 0);
+	textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
+	SDL_QueryTexture(textTexture, NULL, NULL, &textRect.w, &textRect.h);
+	SDL_RenderCopy(renderer, textTexture, NULL, &textRect);
+
+
+	// Clear the memory
+	SDL_FreeSurface(textSurface);
+	SDL_DestroyTexture(textTexture);
+	*/
+}
 
 void Game::checkGameStates()
 {
@@ -838,6 +1078,9 @@ void Game::checkGameStates()
 		pc->changeHP(100);
 		std::cout << "Player died";
 		unloadMap();
+		loadMenu();
+		isInMenu = true;
+		isInLevel = false;
 	}
 }//---
 

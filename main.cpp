@@ -24,6 +24,18 @@ int main(int argc, char* argv[])
 	// Main Game Loop
 	while (game->isRunning())
 	{
+		while (game->inMenu())
+		{
+			frameStart = SDL_GetTicks64();
+
+			game->handleMenuEvents();
+			game->updateMenu(frameTime);
+			game->renderMenu();
+
+			frameTime = SDL_GetTicks64() - frameStart;
+			if (frameDelay > frameTime) SDL_Delay(frameDelay - frameTime);
+		}
+
 		while (game->inLevel())
 		{
 			frameStart = SDL_GetTicks64();

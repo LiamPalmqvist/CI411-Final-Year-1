@@ -7,6 +7,7 @@
 #include <SDL_ttf.h>
 #include <iostream>
 #include <string>
+#include <stdlib.h>
 
 
 // Constants
@@ -32,12 +33,18 @@ public:
 	void checkGameStates();
 	void loadMap(int levelNumber);
 	void unloadMap();
+	void loadMenu();
+	void unloadMenu();
 	void handleEvents();
+	void handleMenuEvents();
 	void checkAttacks();
 	void checkCollision(float frameTime);
 	void update(float frametime);
+	void updateMenu(float frameTime);
 	void updateGUI();
+	void updateMenuGUI();
 	void render();
+	void renderMenu();
 	void closeSDL();
 
 	static SDL_Renderer* renderer;
@@ -47,10 +54,11 @@ public:
 
 private:
 	bool gameRunning = false;
-	bool isInLevel = true;
-	bool isInMenu = false;
+	bool isInLevel = false;
+	bool isInMenu = true;
 	int hurtTimer = 100;
 	bool hurt = false;
+	int mapSelected = 1;
 
 	int coolDown = 0;
 	int points = 0;
