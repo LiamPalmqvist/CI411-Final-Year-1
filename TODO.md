@@ -6,6 +6,7 @@
 - [x] Retry option
 - [ ] Level end
 
+## Main Objectives
 - [x] Player Controlled Object/ Objects
 - [x] Keyboard or Mouse Control
 - [ ] 1 main goal
