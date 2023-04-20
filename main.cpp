@@ -24,15 +24,18 @@ int main(int argc, char* argv[])
 	// Main Game Loop
 	while (game->isRunning())
 	{
-		frameStart = SDL_GetTicks64();
+		while (game->inLevel())
+		{
+			frameStart = SDL_GetTicks64();
 
-		game->handleEvents();
-		game->update(frameTime);
-		game->render();
+			game->handleEvents();
+			game->update(frameTime);
+			game->render();
 
-		// Limit Frame Rate
-		frameTime = SDL_GetTicks64() - frameStart;
-		if (frameDelay > frameTime) SDL_Delay(frameDelay - frameTime);
+			// Limit Frame Rate
+			frameTime = SDL_GetTicks64() - frameStart;
+			if (frameDelay > frameTime) SDL_Delay(frameDelay - frameTime);
+		}
 	}
 
 	game->closeSDL();

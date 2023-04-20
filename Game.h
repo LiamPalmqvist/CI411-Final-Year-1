@@ -25,10 +25,13 @@ class Game
 public:
 	Game(); // constructor
 	bool isRunning() { return gameRunning; }
+	bool inLevel() { return isInLevel; }
+	bool inMenu() { return isInMenu; }
 	void startSDL(const char* title);
 	void createGameObjects();
 	void checkGameStates();
 	void loadMap(int levelNumber);
+	void unloadMap();
 	void handleEvents();
 	void checkAttacks();
 	void checkCollision(float frameTime);
@@ -44,6 +47,8 @@ public:
 
 private:
 	bool gameRunning = false;
+	bool isInLevel = true;
+	bool isInMenu = false;
 	int hurtTimer = 100;
 	bool hurt = false;
 

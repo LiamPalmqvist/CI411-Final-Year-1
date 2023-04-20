@@ -44,7 +44,7 @@ void Game::createGameObjects()
 	background[1]->setSize(720, 1080);
 	background[2]->setSize(720, 1080);
 	// Set these to be active all the time
-	background[0]->setAlive(true); 
+	background[0]->setAlive(true);
 	background[1]->setAlive(true);
 	background[2]->setAlive(true);
 	background[0]->setYVel(40);
@@ -108,6 +108,7 @@ void Game::createGameObjects()
 
 void Game::loadMap(int levelNumber)
 {
+	unloadMap();
 	levelMaps->getLevelLength(1);
 	for (int row = 0; row < 35; row++)
 	{
@@ -155,7 +156,12 @@ void Game::loadMap(int levelNumber)
 						npc->setAlive(true);
 						npc->setX((SCREEN_WIDTH / 3) + (col * SPRITE_SIZE));
 						npc->setY((SCREEN_HEIGHT - 32) - (row * SPRITE_SIZE));
-						break;
+						std::cout
+							<< "Alive: " << npc->getAliveState() << std::endl
+							<< "HP: " << npc->getHP() << std::endl
+							<< "Coords (X,Y): " << npc->getX() << ","
+							<< npc->getY() << std::endl;
+ 						break;
 					}
 				}
 			}
@@ -190,6 +196,64 @@ void Game::loadMap(int levelNumber)
 		}
 	}
 	
+}//---
+
+// Basically just set everything to false
+void Game::unloadMap()
+{
+	pc->setX(0);
+	pc->setY(0);
+	pc->setHP(100);
+
+
+	// Unsetting walls for the player
+	for (GameObject* wall : walls)
+	{
+		if (wall->getAliveState() == true)
+		{
+			wall->setAlive(false);
+		}
+	}	
+	
+	for (NPC* npc : npcs)
+	{
+		if (npc->getAliveState() == true)
+		{
+			npc->setAlive(false);
+		}
+	}
+	
+	for (GameObject* item : items)
+	{
+		if (item->getAliveState() == true)
+		{
+			item->setAlive(false);
+		}
+	}
+	
+	for (GameObject* block : movingWalls)
+	{
+		if (block->getAliveState() == true)
+		{
+			block->setAlive(false);
+		}
+	}
+
+	for (Projectile* bullet : bulletsPC)
+	{
+		if (bullet->getAliveState())
+		{
+			bullet->setAlive(false);
+		}
+	}
+
+	for (Projectile* bullet : bulletsNPC)
+	{
+		if (bullet->getAliveState())
+		{
+			bullet->setAlive(false);
+		}
+	}
 }//---
 
 void Game::checkAttacks()
@@ -349,6 +413,14 @@ void Game::handleEvents()
 	case SDL_KEYUP:
 		// std::cout << "\n" << playerInputEvent.key.keysym.scancode << " + " << playerInputEvent.key.keysym.mod << " up.";
 		playerInput.keyUp = playerInputEvent.key.keysym.scancode;
+		if (playerInputEvent.key.keysym.scancode == SDL_SCANCODE_BACKSPACE)
+		{
+			unloadMap();
+		}
+		else if (playerInputEvent.key.keysym.scancode == SDL_SCANCODE_1)
+		{
+			loadMap(1);
+		}
 		break;
 
 	default:
@@ -522,8 +594,8 @@ void Game::checkCollision(float frameTime)
 
 					if (SDL_HasIntersection(&npcRect, &bulletRect)) // NPC
 					{
-						//npc->setAlive(false); // Disable the NPC 						
-						npc->changeHP(-bullet->getDamage()); // Apply damage
+        				npc->changeHP(-bullet->getDamage()); // Apply damage
+						if (npc->getHP() < 0) { npc->setAlive(false); npc->setHP(100); }// Disable the NPC 						
 						bullet->setAlive(false); // disable bullet
 					}
 				}
@@ -760,8 +832,13 @@ void Game::checkGameStates()
 	}
 
 	// Check if PC is alive
-	if (pc->getHP() < 0) gameRunning = false;
-
+	if (pc->getHP() < 0)
+	{
+		//gameRunning = false;
+		pc->changeHP(100);
+		std::cout << "Player died";
+		unloadMap();
+	}
 }//---
 
 void Game::startSDL(const char* title)

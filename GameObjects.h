@@ -60,6 +60,7 @@ public:
 	float getAngle() { return angle; }
 	float getHP() { return health; }
 	void changeHP(float hpChange) { health += hpChange; }
+	void setHP(float hp) { health = hp; }
 	bool isFiring() { return firing; }
 	int getBulletTier() { return bulletTier; }
 	void setBulletTier(int tier) { bulletTier = tier; }
@@ -137,6 +138,7 @@ public:
 
 	float getHP() { return health; }
 	void changeHP(float hpChange) { health += hpChange; }
+	void setHP(float hp) { health = hp; }
 	int getNextShotTime() { return nextShotTime; }
 	void setNextShotTime(int newTime) { nextShotTime = newTime; }
 	void changeDirection();
