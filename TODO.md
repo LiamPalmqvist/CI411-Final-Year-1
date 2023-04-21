@@ -5,3 +5,4 @@
 - [x] Powerups (makes the firing rate increase)
 - [x] Retry option
 - [x] Level end
+- [ ] Sounds
