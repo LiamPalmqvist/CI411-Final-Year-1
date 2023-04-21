@@ -54,6 +54,7 @@ public:
 	void renderPC();
 	
 	void smoothMove(int keyDown, int keyUp, float frameTime);
+	void resetControls() { wDown = false; sDown = false; aDown = false; firing = false; bulletTier = 0; acceleration = 50; };
 	
 	float getX() { return x; }
 	float getY() { return y; }

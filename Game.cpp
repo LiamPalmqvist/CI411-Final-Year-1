@@ -15,6 +15,7 @@ GameObject* background[3];
 GameObject* walls[80];
 GameObject* items[100];
 GameObject* movingWalls[450];
+GameObject* goalPost[18];
 Projectile* bulletsPC[1000] = {};
 NPC* npcs[20];
 Projectile* bulletsNPC[200] = {};
@@ -104,6 +105,12 @@ void Game::createGameObjects()
 	{
 		movingWalls[i] = new GameObject("assets/images/Square_Cross_Blue.png", 0, 0);
 		movingWalls[i]->setYVel(0);
+	}
+
+	for (int i = 0; i < sizeof(goalPost) / sizeof(goalPost[0]); i++)
+	{
+		goalPost[i] = new GameObject("assets/images/flag.png", 0, 0);
+		goalPost[i]->setYVel(0);
 	}
 	
 	printf("\nCreating Menu Objects");
@@ -235,6 +242,20 @@ void Game::loadMap(int levelNumber)
 					}
 				}
 			}
+
+			if (levelMaps->getTileContent(levelNumber, col, row) == 6)
+			{
+				for (GameObject* post : goalPost)
+				{
+					if (post->getAliveState() == false)
+					{
+						post->setAlive(true);
+						post->setX((SCREEN_WIDTH / 3) + (col * SPRITE_SIZE));
+						post->setY((SCREEN_HEIGHT - 32) - (row * SPRITE_SIZE));
+						break;
+					}
+				}
+			}
 		}
 	}
 	
@@ -293,6 +314,14 @@ void Game::unloadMap()
 		if (bullet->getAliveState())
 		{
 			bullet->setAlive(false);
+		}
+	}
+
+	for (GameObject* post : goalPost)
+	{
+		if (post->getAliveState())
+		{
+			post->setAlive(false);
 		}
 	}
 
@@ -499,13 +528,6 @@ void Game::handleEvents()
 			isInLevel = true;
 			unloadMenu();
 		}
-		else if (playerInputEvent.key.keysym.scancode == SDL_SCANCODE_1)
-		{
-			loadMap(1);
-			isInMenu = false;
-			isInLevel = true;
-			unloadMenu();
-		}
 		break;
 
 	case SDL_KEYUP:
@@ -523,6 +545,8 @@ void Game::handleMenuEvents()
 	// Reset Inputs
 	playerInput.keyDown = NULL;
 	playerInput.keyUp = NULL;
+	pc->resetControls();
+	points = 0;
 
 	//Check for Events
 	SDL_PollEvent(&playerInputEvent);
@@ -552,10 +576,7 @@ void Game::handleMenuEvents()
 			{
 				mapSelected++;
 				selectionFrame->setX(selectionFrame->getX() + 640);
-				for (int i = 0; i < 500; i++)
-				{
-					std::cout << "";
-				}
+				loadMap(mapSelected + 2);
 			}
 			else
 			{
@@ -564,7 +585,7 @@ void Game::handleMenuEvents()
 		}
 		else if (playerInputEvent.key.keysym.scancode == SDL_SCANCODE_RETURN)
 		{
-			loadMap(mapSelected+2);
+			loadMap(mapSelected + 2);
 			std::cout << "loaded map: " << mapSelected;
 			isInMenu = false;
 			isInLevel = true;
@@ -787,6 +808,24 @@ void Game::checkCollision(float frameTime)
 			
 		}
 	}
+
+	for (GameObject* post : goalPost)
+	{
+		if (post->getAliveState())
+		{
+			objectRect.x = post->getX();
+			objectRect.y = post->getY();
+
+			if (SDL_HasIntersection(&pcRect, &objectRect))
+			{
+				printf("You win!");
+				unloadMap();
+				loadMenu();
+				isInMenu = true;
+				isInLevel = false;
+			}
+		}
+	}
 }
 
 void Game::update(float frameTime)
@@ -875,6 +914,11 @@ void Game::update(float frameTime)
 		if (wall->getAliveState()) { wall->update(frameTime); wall->setYVel(20); }
 	}
 
+	for (GameObject* post : goalPost)
+	{
+		if (post->getAliveState()) { post->update(frameTime); post->setYVel(20); }
+	}
+
 	checkAttacks();
 	checkCollision(frameTime);
 }
@@ -929,6 +973,12 @@ void Game::render()
 	{
 		if (wall->getAliveState()) { wall->render(); }
 	}
+
+	for (GameObject* post : goalPost)
+	{
+		if (post->getAliveState()) { post->render(); }
+	}
+
 
 	updateGUI();
 	SDL_RenderPresent(renderer); 	// Update the screen
