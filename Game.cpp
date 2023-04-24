@@ -12,7 +12,8 @@ PlayerCharacter* pc = nullptr;
 GameObject* pc_flash;
 GameObject* grid;
 GameObject* background[3];
-GameObject* walls[80];
+GameObject* invisiWalls[80];
+GameObject* walls[800];
 GameObject* items[100];
 GameObject* movingWalls[450];
 GameObject* goalPost[18];
@@ -96,9 +97,14 @@ void Game::createGameObjects()
 	}
 
 	// Create wall objects but do not enable
+	for (int i = 0; i < sizeof(invisiWalls) / sizeof(invisiWalls[0]); i++)
+	{
+		invisiWalls[i] = new GameObject("assets/images/blanks.png", 0, 0);
+	}
+
 	for (int i = 0; i < sizeof(walls) / sizeof(walls[0]); i++)
 	{
-		walls[i] = new GameObject("assets/images/blank.png", 0, 0);
+		walls[i] = new GameObject("assets/images/wall_2.png", 0, 0);
 	}
 
 	for (int i = 0; i < sizeof(movingWalls) / sizeof(movingWalls[0]); i++)
@@ -144,7 +150,6 @@ void Game::createGameObjects()
 	selectionFrame->setSize(520, 760);
 	selectionFrame->setAlive(true);
 	selectionFrame->setYVel(0);
-
 }//----
 
 void Game::loadMap(int levelNumber)
@@ -164,7 +169,7 @@ void Game::loadMap(int levelNumber)
 		for (int col = 0; col < 2; col++)
 		{
 			// Setting walls for the player
-			for (GameObject* wall : walls)
+			for (GameObject* wall : invisiWalls)
 			{
 				if (wall->getAliveState() == false)
 				{
@@ -186,8 +191,22 @@ void Game::loadMap(int levelNumber)
 
 	for (int row = levelMaps->getLevelLength(levelNumber); row > -1; row--)
 	{
-		for (int col = 17; col > 0; col--)
+		for (int col = 17; col > -1; col--)
 		{
+
+			if (levelMaps->getTileContent(levelNumber, col, row) == 1) //  Walls
+			{
+				for (GameObject* wall : walls)
+				{
+					if (wall->getAliveState() == false)
+					{
+						wall->setAlive(true);
+						wall->setX((SCREEN_WIDTH / 3) + (col * SPRITE_SIZE));
+						wall->setY((SCREEN_HEIGHT - 32) - (row * SPRITE_SIZE));
+						break;
+					}
+				}
+			}
 
 			if (levelMaps->getTileContent(levelNumber, col, row) == 2) // PC
 			{
@@ -243,7 +262,7 @@ void Game::loadMap(int levelNumber)
 				}
 			}
 
-			if (levelMaps->getTileContent(levelNumber, col, row) == 6)
+			if (levelMaps->getTileContent(levelNumber, col, row) == 6) // Goalpost
 			{
 				for (GameObject* post : goalPost)
 				{
@@ -275,8 +294,24 @@ void Game::unloadMap()
 		{
 			wall->setAlive(false);
 		}
-	}	
+	}
+
+	for (GameObject* wall : invisiWalls)
+	{
+		if (wall->getAliveState() == true)
+		{
+			wall->setAlive(false);
+		}
+	}
 	
+	for (GameObject* block : movingWalls)
+	{
+		if (block->getAliveState() == true)
+		{
+			block->setAlive(false);
+		}
+	}
+
 	for (NPC* npc : npcs)
 	{
 		if (npc->getAliveState() == true)
@@ -293,14 +328,6 @@ void Game::unloadMap()
 		}
 	}
 	
-	for (GameObject* block : movingWalls)
-	{
-		if (block->getAliveState() == true)
-		{
-			block->setAlive(false);
-		}
-	}
-
 	for (Projectile* bullet : bulletsPC)
 	{
 		if (bullet->getAliveState())
@@ -524,9 +551,10 @@ void Game::handleEvents()
 		playerInput.keyDown = playerInputEvent.key.keysym.scancode;
 		if (playerInputEvent.key.keysym.scancode == SDL_SCANCODE_ESCAPE)
 		{
-			isInMenu = false;
-			isInLevel = true;
-			unloadMenu();
+			isInMenu = true;
+			isInLevel = false;
+			unloadMap();
+			loadMenu();
 		}
 		break;
 
@@ -565,10 +593,6 @@ void Game::handleMenuEvents()
 				mapSelected--;
 				selectionFrame->setX(selectionFrame->getX() - 640);
 			}
-			else
-			{
-				break;
-			}
 		}
 		else if (playerInputEvent.key.keysym.scancode == SDL_SCANCODE_RIGHT)
 		{
@@ -578,10 +602,6 @@ void Game::handleMenuEvents()
 				selectionFrame->setX(selectionFrame->getX() + 640);
 				loadMap(mapSelected + 2);
 			}
-			else
-			{
-				break;
-			}
 		}
 		else if (playerInputEvent.key.keysym.scancode == SDL_SCANCODE_RETURN)
 		{
@@ -590,6 +610,11 @@ void Game::handleMenuEvents()
 			isInMenu = false;
 			isInLevel = true;
 			unloadMenu();
+		}
+		else if (playerInputEvent.key.keysym.scancode == SDL_SCANCODE_ESCAPE)
+		{
+			gameRunning = false;
+			closeSDL();
 		}
 		break;
 
@@ -677,6 +702,20 @@ void Game::checkCollision(float frameTime)
 							}
 						}
 					}
+
+					for (GameObject* block : invisiWalls)  //  Moving Terrain ------
+					{
+						if (block->getAliveState())
+						{
+							objectRect.x = block->getX();
+							objectRect.y = block->getY();
+
+							if (SDL_HasIntersection(&objectRect, &bulletRect))
+							{
+								bullet->setAlive(false); // disable bullet
+							}
+						}
+					}
 				}
 			}
 		}
@@ -717,6 +756,20 @@ void Game::checkCollision(float frameTime)
 			}
 
 			for (GameObject* block : walls)  //  Terrain ------
+			{
+				if (block->getAliveState())
+				{
+					objectRect.x = block->getX();
+					objectRect.y = block->getY();
+
+					if (SDL_HasIntersection(&objectRect, &bulletRect))
+					{
+						bullet->setAlive(false); // disable bullet
+					}
+				}
+			}
+
+			for (GameObject* block : invisiWalls)  //  Invisible Terrain ------
 			{
 				if (block->getAliveState())
 				{
@@ -809,6 +862,42 @@ void Game::checkCollision(float frameTime)
 		}
 	}
 
+	for (GameObject* wall : invisiWalls)
+	{
+		if (wall->getAliveState() == true)
+		{
+			objectRect.x = wall->getX();
+			objectRect.y = wall->getY();
+
+			if (SDL_HasIntersection(&pcRect, &objectRect))
+			{
+				pc->stop();
+				pc->setY(pc->getY() + (20 * frameTime));
+			}
+
+			if (wall->getX() > SCREEN_WIDTH || wall->getY() > SCREEN_HEIGHT)
+			{
+				wall->setAlive(false);
+				// std::cout << "destroyed" << wall;
+			}
+
+			for (NPC* npc : npcs) // NPCs ---------
+			{
+				if (npc->getAliveState() == true)
+				{
+					npcRect.x = npc->getX(); // Update the rect
+					npcRect.y = npc->getY();
+
+					if (SDL_HasIntersection(&npcRect, &objectRect))
+					{
+						npc->changeDirection();
+					}
+				}
+			}
+
+		}
+	}
+
 	for (GameObject* post : goalPost)
 	{
 		if (post->getAliveState())
@@ -830,6 +919,32 @@ void Game::checkCollision(float frameTime)
 
 void Game::update(float frameTime)
 {
+
+	if (mapSelected == 1)
+	{
+		for (GameObject* item : items)
+		{
+			item->setYVel(0);
+		}
+
+		for (GameObject* endGate : goalPost)
+		{
+			endGate->setYVel(0);
+		}
+	}
+	else
+	{
+		for (GameObject* item : items)
+		{
+			item->setYVel(20);
+		}
+
+		for (GameObject* endGate : goalPost)
+		{
+			endGate->setYVel(20);
+		}
+	}
+
 	// Ensure Frame rate is at the delay speed and convert to deltaTime
 	if (frameTime < 1000 * (float)1 / FPS) frameTime = (float)1 / FPS;
 
@@ -909,6 +1024,11 @@ void Game::update(float frameTime)
 		if (wall->getAliveState()) { wall->update(frameTime); }
 	}
 
+	for (GameObject* wall : invisiWalls)
+	{
+		if (wall->getAliveState()) { wall->update(frameTime); }
+	}
+
 	for (GameObject* wall : movingWalls)
 	{
 		if (wall->getAliveState()) { wall->update(frameTime); wall->setYVel(20); }
@@ -965,6 +1085,11 @@ void Game::render()
 	}
 
 	for (GameObject* wall : walls)
+	{
+		if (wall->getAliveState()) { wall->render(); }
+	}
+
+	for (GameObject* wall : invisiWalls)
 	{
 		if (wall->getAliveState()) { wall->render(); }
 	}
