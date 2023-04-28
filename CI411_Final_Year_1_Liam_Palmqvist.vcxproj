@@ -75,8 +75,8 @@
     <LibraryPath>C:\Users\Liamp\OneDrive - University of Brighton\Documents\Libraries\SDL\lib\x64;C:\Users\liampalmqvist\OneDrive - University of Brighton\Documents\Libraries\SDL\lib\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>C:\Users\liampalmqvist\OneDrive - University of Brighton\Documents\Libraries\SDL\include;C:\Users\Liamp\OneDrive - University of Brighton\Documents\Libraries\SDL\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\Liamp\OneDrive - University of Brighton\Documents\Libraries\SDL\lib\x64;C:\Users\liampalmqvist\OneDrive - University of Brighton\Documents\Libraries\SDL\lib\x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Users\LP889\OneDrive - University of Brighton\Documents\Libraries\SDL\include;C:\Users\liampalmqvist\OneDrive - University of Brighton\Documents\Libraries\SDL\include;C:\Users\Liamp\OneDrive - University of Brighton\Documents\Libraries\SDL\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\LP889\OneDrive - University of Brighton\Documents\Libraries\SDL\lib\x64;C:\Users\Liamp\OneDrive - University of Brighton\Documents\Libraries\SDL\lib\x64;C:\Users\liampalmqvist\OneDrive - University of Brighton\Documents\Libraries\SDL\lib\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

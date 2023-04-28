@@ -919,6 +919,7 @@ void Game::checkCollision(float frameTime)
 
 void Game::update(float frameTime)
 {
+	frameTime = static_cast<float>(1) / FPS;
 
 	if (mapSelected == 1)
 	{
